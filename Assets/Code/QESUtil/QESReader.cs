@@ -24,11 +24,14 @@ public class QESReader
 		XmlDocument doc = new XmlDocument();
 		doc.LoadXml (dataSource.TextFileContents ("structure.xml"));
 
-		XmlElement outerElement = doc.DocumentElement;
+		XmlElement topElement = doc.DocumentElement;
 
-		if (outerElement.Name != "Scene") {
-			throw new XmlException ("Unexpected root node: " + outerElement.Name);
+		if (topElement.Name != "Settings") {
+			throw new XmlException ("Unexpected root node: " + topElement.Name);
 		}
+
+		XmlElement outerElement = topElement ["Scene"];
+
 		buildings = new QESBuilding[outerElement.ChildNodes.Count];
 		int buildingIndex = 0;
 		foreach (XmlNode buildingNode in outerElement) {
@@ -56,10 +59,43 @@ public class QESReader
 			buildings[buildingIndex] = new QESBuilding(faces);
 			buildingIndex++;
 		}
+
+		XmlElement timestampsNode = topElement ["Timestamps"];
+		XmlNodeList timestampNodes = timestampsNode.ChildNodes;
+		timestamps = new QESTimestamp[timestampNodes.Count];
+		for (int i=0; i<timestampNodes.Count; i++) {
+			XmlNode tsNode = timestampNodes.Item (i);
+			timestamps[i] = new QESTimestamp(int.Parse (tsNode.Attributes["year"].Value),
+			                                 int.Parse (tsNode.Attributes["month"].Value),
+			                                 int.Parse (tsNode.Attributes["day"].Value),
+			                                 int.Parse (tsNode.Attributes["hour"].Value),
+			                                 int.Parse (tsNode.Attributes["minute"].Value), 
+			                                 int.Parse (tsNode.Attributes["second"].Value));
+		}
+
+		XmlElement variablesNode = topElement ["Variables"];
+		XmlNodeList variableNodes = variablesNode.ChildNodes;
+		variables = new QESVariable[variableNodes.Count];
+		for (int i=0; i<variableNodes.Count; i++) {
+			XmlNode varNode = variableNodes.Item(i);
+			variables[i] = new QESVariable(varNode.Attributes["name"].Value,
+			                               varNode.Attributes["longname"].Value,
+			                               varNode.Attributes["unit"].Value,
+			                               float.Parse (varNode.Attributes["min"].Value),
+			                               float.Parse (varNode.Attributes["max"].Value));
+		}
 	}
 
-	public float[] GetPatchData (string var) {
-		byte[] rawBytes = dataSource.BinaryFileContents (var);
+	public QESTimestamp[] getTimestamps() {
+		return timestamps;
+	}
+
+	public QESVariable[] getVariables() {
+		return variables;
+	}
+
+	public float[] GetPatchData (string var, int timestamp) {
+		byte[] rawBytes = dataSource.BinaryFileContents (var + timestamp.ToString());
 		float[] vals = new float[rawBytes.Length/4];
 		for (int i=0; i<vals.Length; i++) {
 			vals[i] = System.BitConverter.ToSingle(rawBytes, i*4);
@@ -84,4 +120,6 @@ public class QESReader
 
 	private IQESDataSource dataSource;
 	private QESBuilding[] buildings;
+	private QESTimestamp[] timestamps;
+	private QESVariable[] variables;
 }

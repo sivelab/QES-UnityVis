@@ -15,7 +15,7 @@ public class DrawQES : MonoBehaviour
 
 		qesReader = new QESReader (directorySource);
 
-		timestep = 0;
+		timestep = qesReader.getTimestamps().Length / 2;
 
 		SetMesh ();
 	}
@@ -125,7 +125,7 @@ public class DrawQES : MonoBehaviour
 			Texture2D faceTex = new Texture2D (faces [faceIndex].SampleWidth, faces [faceIndex].SampleHeight);
 			
 			faceTex.filterMode = FilterMode.Point;
-			
+			faceTex.wrapMode = TextureWrapMode.Clamp;
 			
 			int sampleCount = faces [faceIndex].SampleWidth * faces [faceIndex].SampleHeight;
 			int baseIndex = faces [faceIndex].PatchIndex;
@@ -136,13 +136,15 @@ public class DrawQES : MonoBehaviour
 				float mappedVal = (data [patch] - minVal) / (maxVal - minVal);
 				colors [patch - baseIndex] = new Color (mappedVal, mappedVal, mappedVal);
 			}
-			
+
 			faceTex.SetPixels (colors);
 			faceTex.Apply ();
 			materials [faceIndex].mainTexture = faceTex;
 		}
 		MeshRenderer mr = GetComponent<MeshRenderer> ();
 		mr.materials = materials;
+
+		Resources.UnloadUnusedAssets();
 	}
 	
 	// Update is called once per frame

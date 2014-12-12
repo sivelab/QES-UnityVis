@@ -15,7 +15,7 @@ public class DrawQES : MonoBehaviour
 
 		qesReader = new QESReader (directorySource);
 
-		timestep = qesReader.getTimestamps().Length / 2;
+		timestep = qesReader.getTimestamps ().Length / 2;
 
 		SetMesh ();
 	}
@@ -104,6 +104,7 @@ public class DrawQES : MonoBehaviour
 
 	void setMaterials ()
 	{
+		ColorRamp ramp = ColorRamp.GetColorRamp ("erdc_pbj_lin");
 		Material[] materials = new Material[faces.Count];
 
 		string varName = "patch_temperature";
@@ -112,12 +113,12 @@ public class DrawQES : MonoBehaviour
 		QESVariable[] vars = qesReader.getVariables ();
 		float minVal = -1, maxVal = -1;
 		for (int i=0; i<vars.Length; i++) {
-			if (vars[i].Name == varName) {
-				minVal = vars[i].Min;
-				maxVal = vars[i].Max;
+			if (vars [i].Name == varName) {
+				minVal = vars [i].Min;
+				maxVal = vars [i].Max;
 			}
 		}
-		
+
 		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {
 			
 			materials [faceIndex] = new Material (baseMaterial);
@@ -134,17 +135,18 @@ public class DrawQES : MonoBehaviour
 			
 			for (int patch=baseIndex; patch<baseIndex + sampleCount; patch++) {
 				float mappedVal = (data [patch] - minVal) / (maxVal - minVal);
-				colors [patch - baseIndex] = new Color (mappedVal, mappedVal, mappedVal);
+				colors [patch - baseIndex] = ramp.Value(mappedVal);
 			}
 
 			faceTex.SetPixels (colors);
 			faceTex.Apply ();
 			materials [faceIndex].mainTexture = faceTex;
 		}
+
 		MeshRenderer mr = GetComponent<MeshRenderer> ();
 		mr.materials = materials;
 
-		Resources.UnloadUnusedAssets();
+		Resources.UnloadUnusedAssets ();
 	}
 	
 	// Update is called once per frame
@@ -165,6 +167,9 @@ public class DrawQES : MonoBehaviour
 			timestep = qesReader.getTimestamps ().Length - 1;
 		}
 		if (timestep != oldTimestep) {
+			QESTimestamp ts = qesReader.getTimestamps () [timestep];
+			Debug.Log ("Current time: " + ts.Hour + ":" + ts.Minute);
+			System.Diagnostics.Stopwatch allMat = new System.Diagnostics.Stopwatch ();
 			setMaterials ();
 		}
 	}

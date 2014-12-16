@@ -8,10 +8,11 @@ using System.Collections.Generic;
 public class DrawQES : MonoBehaviour
 {
 	public Material baseMaterial;
+	public Material transparentMaterial;
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/testexport/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-rider/");
 
 		qesReader = new QESReader (directorySource);
 
@@ -70,6 +71,8 @@ public class DrawQES : MonoBehaviour
 				faces.Add (face);
 			}
 		}
+
+
 		
 		Vector3[] verticesArray = new Vector3[vertices.Count];
 		Vector3[] normalsArray = new Vector3[normals.Count];
@@ -87,7 +90,7 @@ public class DrawQES : MonoBehaviour
 		mesh.normals = normalsArray;
 		mesh.uv = uvArray;
 
-		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {
+		for (int faceIndex=0; faceIndex < indices.Count; faceIndex++) {
 			int[] indicesArray = new int[indices [faceIndex].Count];
 			indices [faceIndex].CopyTo (indicesArray);
 			mesh.SetTriangles (indicesArray, faceIndex);
@@ -104,20 +107,29 @@ public class DrawQES : MonoBehaviour
 
 	void setMaterials ()
 	{
+		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		ColorRamp ramp = ColorRamp.GetColorRamp ("erdc_pbj_lin");
-		Material[] materials = new Material[faces.Count];
+		Material[] materials = new Material[mesh.subMeshCount];
 
 		string varName = "patch_temperature";
+
+
 		
 		float[] data = qesReader.GetPatchData (varName, timestep);
+
 		QESVariable[] vars = qesReader.getVariables ();
 		float minVal = -1, maxVal = -1;
+		float volMinVal = -1, volMaxVal = -1;
 		for (int i=0; i<vars.Length; i++) {
 			if (vars [i].Name == varName) {
 				minVal = vars [i].Min;
 				maxVal = vars [i].Max;
 			}
 		}
+
+		volMinVal = 300;
+
+		Debug.Log (volMaxVal);
 
 		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {
 			
@@ -142,6 +154,8 @@ public class DrawQES : MonoBehaviour
 			faceTex.Apply ();
 			materials [faceIndex].mainTexture = faceTex;
 		}
+
+
 
 		MeshRenderer mr = GetComponent<MeshRenderer> ();
 		mr.materials = materials;

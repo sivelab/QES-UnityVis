@@ -42,7 +42,7 @@
 	    		discard;
 	    	}
 	        float val = tex3D(_MainTex, i.uvw * _RelativeBounds.xyz);
-	        return half4(val, val, val, pow(val, 3.0));
+	        return half4(val * val, val, sqrt(val), pow(val, 3.0));
 	    }
     	ENDCG
     	Blend SrcAlpha OneMinusSrcAlpha 

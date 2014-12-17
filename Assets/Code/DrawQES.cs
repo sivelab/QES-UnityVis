@@ -12,7 +12,7 @@ public class DrawQES : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-rider/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
 
 		qesReader = new QESReader (directorySource);
 
@@ -29,7 +29,7 @@ public class DrawQES : MonoBehaviour
 		List<List<int>> indices = new List<List<int>> ();
 		faces = new List<QESFace> ();
 		
-		float scaleFactor = 0.1f;
+		float scaleFactor = 1.0f;
 		
 		foreach (QESBuilding building in qesReader.Buildings) {
 			foreach (QESFace face in building.Faces) {
@@ -126,8 +126,6 @@ public class DrawQES : MonoBehaviour
 				maxVal = vars [i].Max;
 			}
 		}
-
-		volMinVal = 300;
 
 		Debug.Log (volMaxVal);
 

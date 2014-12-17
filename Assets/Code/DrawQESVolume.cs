@@ -8,7 +8,7 @@ public class DrawQESVolume : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-rider/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
 		
 		qesReader = new QESReader (directorySource);
 		
@@ -115,8 +115,7 @@ public class DrawQESVolume : MonoBehaviour
 	{
 		float maxVal = var.Max;
 		float minVal = var.Min;
-		minVal = 300;
-		ColorRamp ramp = ColorRamp.GetColorRamp ("erdc_pbj_lin");
+		ColorRamp ramp = ColorRamp.GetColorRamp ("erdc_cyan2orange");
 		Texture2D sliceTex = new Texture2D ((int)qesReader.WorldDims.x, (int)qesReader.WorldDims.y);
 		sliceTex.wrapMode = TextureWrapMode.Clamp;
 			
@@ -125,8 +124,10 @@ public class DrawQESVolume : MonoBehaviour
 		int baseIndex = slice * sampleCount;
 		for (int sample=baseIndex; sample<baseIndex + sampleCount; sample++) {
 			float mappedVal = (data [sample] - minVal) / (maxVal - minVal);
+			if (mappedVal < 0) mappedVal = 0;
+			if (mappedVal > 1) mappedVal = 1;
 			colors [sample - baseIndex] = ramp.Value (mappedVal);
-			colors [sample - baseIndex].a = mappedVal * mappedVal * mappedVal;
+			colors [sample - baseIndex].a = Mathf.Pow(mappedVal, 3.0f);
 		}
 		sliceTex.SetPixels (colors);
 		sliceTex.Apply ();

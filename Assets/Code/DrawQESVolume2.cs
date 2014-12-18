@@ -92,7 +92,7 @@ public class DrawQESVolume2 : MonoBehaviour
 			for (int y=0; y<texHeight; y++) {
 				for (int x=0; x<texWidth; x++) {
 					int texSample = z * texHeight * texWidth + y * texWidth + x;
-					float mappedVal = 0.5f;
+					float mappedVal = 0.0f;
 					if (z < depth && y < height && x < width) {
 						int dataSample = z * height * width + y * width + x;
 						mappedVal = (volData [dataSample] - minVal) / (maxVal - minVal);
@@ -123,11 +123,34 @@ public class DrawQESVolume2 : MonoBehaviour
 			//GetComponent<MeshRenderer> ().material = mat;
 
 		}
+		if (material == null) {
+			material = new Material (transparentMaterial);
+			material.mainTexture = cubeTex;
+			material.SetVector ("_RelativeBounds", relativeAmounts);
 
-		Material mat = new Material (transparentMaterial);
-		mat.mainTexture = cubeTex;
-		mat.SetVector("_RelativeBounds", relativeAmounts);
-		GetComponent<MeshRenderer> ().material = mat;
+			int colorRampWidth = 16;
+			int colorRampHeight = 256;
+			Texture2D colorRamp = new Texture2D (colorRampWidth, colorRampHeight, TextureFormat.RGBA32, false);
+			colorRamp.wrapMode = TextureWrapMode.Clamp;
+			ColorRamp ramp = ColorRamp.GetColorRamp("erdc_cyan2orange");
+			Color[] colors = new Color[colorRampWidth * colorRampHeight];
+			for (int y=0; y<colorRampHeight; y++) {
+				float yVal = y * 1.0f / colorRampHeight;
+
+				if (yVal < 0) yVal = 0;
+				if (yVal > 1) yVal = 1;
+
+				Color col = ramp.Value (yVal);
+				col.a = Mathf.Pow (yVal, 3);
+				for (int x=0; x<colorRampWidth; x++) {
+					colors[y * colorRampWidth + x] = col;
+				}
+			}
+			colorRamp.SetPixels(colors);
+			colorRamp.Apply();
+			material.SetTexture("_RampTex", colorRamp);
+		}
+		GetComponent<MeshRenderer> ().material = material;
 
 		List<Vector3> vertices = new List<Vector3> ();
 		List<Vector2> uvs = new List<Vector2> ();
@@ -262,4 +285,5 @@ public class DrawQESVolume2 : MonoBehaviour
 	private List<GameObject> childs;
 	private Texture3D cubeTex;
 	private Vector4 relativeAmounts;
+	private Material material;
 }

@@ -1,6 +1,7 @@
 ﻿Shader "Custom/VolumeMap" {
 	Properties {
 		_MainTex ("Volume (RGB)", 3D) = "white" {}
+		_RampTex ("Ramp Texture (RGBA)", 2D) = "white" {}
 		_RelativeBounds ("Relative Bounds", Vector) = (0.5, 0.5, 0.5, 0.0)
 	}
 	SubShader {
@@ -15,6 +16,7 @@
 		#pragma glsl
 
 		sampler3D _MainTex;
+		sampler2D _RampTex;
 		float4 _RelativeBounds;
 
 		struct v2f {
@@ -42,7 +44,7 @@
 	    		discard;
 	    	}
 	        float val = tex3D(_MainTex, i.uvw * _RelativeBounds.xyz);
-	        return half4(val * val, val, sqrt(val), pow(val, 3.0));
+	        return tex2D(_RampTex, half2(val, val));
 	    }
     	ENDCG
     	Blend SrcAlpha OneMinusSrcAlpha 

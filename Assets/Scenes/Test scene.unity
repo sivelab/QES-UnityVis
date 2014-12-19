@@ -326,7 +326,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   transparentMaterial: {fileID: 2100000, guid: 729dc1ec0f8df4533ae061c60a7fa6d6, type: 2}
   mainCamera: {fileID: 1327279160}
-  numSlices: 350
+  numSlices: 20
+  doNoise: 1
 --- !u!33 &2084791894
 MeshFilter:
   m_ObjectHideFlags: 0

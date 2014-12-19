@@ -12,7 +12,7 @@ public class DrawQES : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-richards/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
 
 		qesReader = new QESReader (directorySource);
 

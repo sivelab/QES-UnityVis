@@ -11,10 +11,12 @@ public class DrawQESVolume2 : MonoBehaviour
 	public Camera mainCamera;
 	public int numSlices = 20;
 
+	public bool doNoise = true;
+
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-richards/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
 		
 		qesReader = new QESReader (directorySource);
 		
@@ -23,6 +25,8 @@ public class DrawQESVolume2 : MonoBehaviour
 		childs = new List<GameObject> ();
 
 		CreateTexture ();
+
+		CreateNoiseTexture ();
 		
 		SetMesh ();
 		
@@ -56,9 +60,25 @@ public class DrawQESVolume2 : MonoBehaviour
 		}
 	}
 
+	void CreateNoiseTexture() {
+		int noiseDim = 256;
+		if (noiseTex == null) {
+			noiseTex = new Texture2D (noiseDim, noiseDim, TextureFormat.RGBA32, false);
+		}
+		Color[] colors = new Color[noiseDim * noiseDim];
+		for (int i=0; i<colors.Length; i++) {
+			float v = (Random.value * 2 - 1) * (Random.value * 2 - 1) * (Random.value * 2 - 1);
+			v = v * 0.5f + 0.5f;
+			colors [i] = new Color (v, v, v, v);
+		}
+		noiseTex.SetPixels (colors);
+		noiseTex.filterMode = FilterMode.Bilinear;
+		noiseTex.Apply ();
+	}
+
 	void CreateTexture ()
 	{
-		string volumeName = "ac_temperature";
+		string volumeName = "ac_star2_magnitude";
 		float[] volData = qesReader.GetPatchData (volumeName, timestep);
 		Vector3 patchDims = qesReader.PatchDims;
 		
@@ -112,6 +132,7 @@ public class DrawQESVolume2 : MonoBehaviour
 	
 	void SetMesh ()
 	{	
+		CreateNoiseTexture ();
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		if (mesh == null) {
 			mesh = new Mesh ();
@@ -149,6 +170,7 @@ public class DrawQESVolume2 : MonoBehaviour
 			colorRamp.SetPixels(colors);
 			colorRamp.Apply();
 			material.SetTexture("_RampTex", colorRamp);
+			material.SetTexture ("_NoiseTex", noiseTex);
 		}
 		GetComponent<MeshRenderer> ().material = material;
 
@@ -184,6 +206,9 @@ public class DrawQESVolume2 : MonoBehaviour
 		localV.Normalize ();
 		localU = Vector3.Cross (localV, localN);
 		localU.Normalize ();
+
+		material.SetVector ("_CameraTexPosition", texCoords(localCenter, localCameraPosition));
+		material.SetFloat ("_NumSlices", numSlices);
 
 		for (int i=0; i<=numSlices; i++) {
 			Vector3 planeOrigin = localCenter + localN * localRadius * ((i * 2.0f) / (numSlices) - 1.0f);
@@ -284,6 +309,7 @@ public class DrawQESVolume2 : MonoBehaviour
 	private List<QESFace> faces;
 	private List<GameObject> childs;
 	private Texture3D cubeTex;
+	private Texture2D noiseTex;
 	private Vector4 relativeAmounts;
 	private Material material;
 }

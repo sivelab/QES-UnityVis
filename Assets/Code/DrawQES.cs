@@ -11,14 +11,17 @@ public class DrawQES : MonoBehaviour
 	public Material transparentMaterial;
 	public bool showChange = false;
 	public float changeRange = 20;
+	public GUIText debugText;
+	public string variableName = "patch_nir";
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/testexport/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-gothenburg/");
 		
 		qesReader = new QESReader (directorySource);
 		
 		timestep = qesReader.getTimestamps ().Length / 2;
+		timestepUp = true;
 		
 		SetMesh ();
 	}
@@ -109,6 +112,8 @@ public class DrawQES : MonoBehaviour
 	
 	void setMaterials ()
 	{
+		QESTimestamp ts = qesReader.getTimestamps () [timestep];
+		debugText.text = (variableName + ": " + ts.Month + "/" + ts.Day + " " + ts.Hour + ":" + ts.Minute);
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		ColorRamp ramp;
 		if (showChange) {
@@ -118,7 +123,7 @@ public class DrawQES : MonoBehaviour
 		}
 		Material[] materials = new Material[mesh.subMeshCount];
 		
-		string varName = "patch_temperature";
+		string varName = variableName;
 		
 		
 
@@ -144,8 +149,11 @@ public class DrawQES : MonoBehaviour
 					maxVal = vars [i].Max;
 				}
 			}
+			if (variableName == "patch_nir" || variableName == "patch_par") {
+				maxVal *= 0.2f;
+			}
 		}
-		
+
 		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {
 			
 			materials [faceIndex] = new Material (baseMaterial);
@@ -182,11 +190,44 @@ public class DrawQES : MonoBehaviour
 	void Update ()
 	{
 		int oldTimestep = timestep;
+		string oldVariable = variableName;
+		bool oldShowChange = showChange;
+		bool shift = Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift);
 		if (Input.GetKey (KeyCode.LeftBracket)) {
-			timestep--;
+			if (timestepUp) {
+				if (shift) {
+					timestep -= 6;
+				} else {
+					timestep--;
+				}
+			}
+			timestepUp = false;
+		} else if (Input.GetKey (KeyCode.RightBracket)) {
+			if (timestepUp) {
+				if (shift) {
+					timestep += 6;
+				} else {
+					timestep++;
+				}
+			}
+			timestepUp = false;
+		} else {
+			timestepUp = true;
 		}
-		if (Input.GetKey (KeyCode.RightBracket)) {
-			timestep++;
+		if (Input.GetKey (KeyCode.C)) {
+			showChange = !showChange;
+		}
+		if (Input.GetKey (KeyCode.N)) {
+			variableName = "patch_nir";
+		}
+		if (Input.GetKey (KeyCode.P)) {
+			variableName = "patch_par";
+		}
+		if (Input.GetKey (KeyCode.L)) {
+			variableName = "patch_longwave";
+		}
+		if (Input.GetKey (KeyCode.T)) {
+			variableName = "patch_temperature";
 		}
 		if (timestep < 0) {
 			timestep = 0;
@@ -195,9 +236,9 @@ public class DrawQES : MonoBehaviour
 		if (timestep >= qesReader.getTimestamps ().Length) {
 			timestep = qesReader.getTimestamps ().Length - 1;
 		}
-		if (timestep != oldTimestep) {
-			QESTimestamp ts = qesReader.getTimestamps () [timestep];
-			Debug.Log ("Current time: " + ts.Hour + ":" + ts.Minute);
+		if (timestep != oldTimestep
+		    || variableName != oldVariable
+		    || oldShowChange != showChange) {
 			System.Diagnostics.Stopwatch allMat = new System.Diagnostics.Stopwatch ();
 			setMaterials ();
 		}
@@ -206,4 +247,5 @@ public class DrawQES : MonoBehaviour
 	private QESReader qesReader;
 	private int timestep;
 	private List<QESFace> faces;
+	private bool timestepUp;
 }

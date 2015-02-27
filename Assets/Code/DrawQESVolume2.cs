@@ -16,7 +16,7 @@ public class DrawQESVolume2 : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-richards/");
 		
 		qesReader = new QESReader (directorySource);
 		
@@ -78,7 +78,7 @@ public class DrawQESVolume2 : MonoBehaviour
 
 	void CreateTexture ()
 	{
-		string volumeName = "ac_star2_magnitude";
+		string volumeName = "ac_temperature";
 		float[] volData = qesReader.GetPatchData (volumeName, timestep);
 		Vector3 patchDims = qesReader.PatchDims;
 		

@@ -12,6 +12,9 @@
 	string IQESDataSource.TextFileContents (string filename)
 	{
 		string fullpath = System.IO.Path.Combine (directory, filename);
+		if (!System.IO.File.Exists (fullpath)) {
+			throw new System.IO.FileNotFoundException("File " + filename + " doesn't exist");
+		}
 		return System.IO.File.ReadAllText (fullpath);
 	}
 

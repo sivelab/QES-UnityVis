@@ -9,18 +9,20 @@ public class DrawQES : MonoBehaviour
 {
 	public Material baseMaterial;
 	public Material transparentMaterial;
+	public bool showChange = false;
+	public float changeRange = 20;
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
-
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/testexport/");
+		
 		qesReader = new QESReader (directorySource);
-
+		
 		timestep = qesReader.getTimestamps ().Length / 2;
-
+		
 		SetMesh ();
 	}
-
+	
 	void SetMesh ()
 	{
 		List<Vector3> vertices = new List<Vector3> ();
@@ -71,8 +73,8 @@ public class DrawQES : MonoBehaviour
 				faces.Add (face);
 			}
 		}
-
-
+		
+		
 		
 		Vector3[] verticesArray = new Vector3[vertices.Count];
 		Vector3[] normalsArray = new Vector3[normals.Count];
@@ -89,7 +91,7 @@ public class DrawQES : MonoBehaviour
 		mesh.vertices = verticesArray;
 		mesh.normals = normalsArray;
 		mesh.uv = uvArray;
-
+		
 		for (int faceIndex=0; faceIndex < indices.Count; faceIndex++) {
 			int[] indicesArray = new int[indices [faceIndex].Count];
 			indices [faceIndex].CopyTo (indicesArray);
@@ -101,34 +103,49 @@ public class DrawQES : MonoBehaviour
 		mesh.Optimize ();
 		
 		GetComponent<MeshFilter> ().mesh = mesh;
-
+		
 		setMaterials ();
 	}
-
+	
 	void setMaterials ()
 	{
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
-		ColorRamp ramp = ColorRamp.GetColorRamp ("erdc_pbj_lin");
+		ColorRamp ramp;
+		if (showChange) {
+			ramp = ColorRamp.GetColorRamp ("erdc_divLow_icePeach");
+		} else {
+			ramp = ColorRamp.GetColorRamp("erdc_pbj_lin");
+		}
 		Material[] materials = new Material[mesh.subMeshCount];
-
-		string varName = "patch_temperature";
-
-
 		
-		float[] data = qesReader.GetPatchData (varName, timestep);
+		string varName = "patch_temperature";
+		
+		
 
+		float[] data = qesReader.GetPatchData (varName, timestep);
+		if (showChange) {
+			float [] nextData = qesReader.GetPatchData (varName, timestep + 1);
+			for (int i=0; i<data.Length; i++) {
+				data [i] = nextData [i] - data [i];
+			}
+		}
+		
 		QESVariable[] vars = qesReader.getVariables ();
 		float minVal = -1, maxVal = -1;
 		float volMinVal = -1, volMaxVal = -1;
-		for (int i=0; i<vars.Length; i++) {
-			if (vars [i].Name == varName) {
-				minVal = vars [i].Min;
-				maxVal = vars [i].Max;
+
+		if (showChange) {
+			minVal = -Mathf.Abs (changeRange);
+			maxVal = Mathf.Abs (changeRange);
+		} else {
+			for (int i=0; i<vars.Length; i++) {
+				if (vars [i].Name == varName) {
+					minVal = vars [i].Min;
+					maxVal = vars [i].Max;
+				}
 			}
 		}
-
-		Debug.Log (volMaxVal);
-
+		
 		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {
 			
 			materials [faceIndex] = new Material (baseMaterial);
@@ -145,19 +162,19 @@ public class DrawQES : MonoBehaviour
 			
 			for (int patch=baseIndex; patch<baseIndex + sampleCount; patch++) {
 				float mappedVal = (data [patch] - minVal) / (maxVal - minVal);
-				colors [patch - baseIndex] = ramp.Value(mappedVal);
+				colors [patch - baseIndex] = ramp.Value (mappedVal);
 			}
-
+			
 			faceTex.SetPixels (colors);
 			faceTex.Apply ();
 			materials [faceIndex].mainTexture = faceTex;
 		}
-
-
-
+		
+		
+		
 		MeshRenderer mr = GetComponent<MeshRenderer> ();
 		mr.materials = materials;
-
+		
 		Resources.UnloadUnusedAssets ();
 	}
 	
@@ -174,7 +191,7 @@ public class DrawQES : MonoBehaviour
 		if (timestep < 0) {
 			timestep = 0;
 		}
-
+		
 		if (timestep >= qesReader.getTimestamps ().Length) {
 			timestep = qesReader.getTimestamps ().Length - 1;
 		}
@@ -185,7 +202,7 @@ public class DrawQES : MonoBehaviour
 			setMaterials ();
 		}
 	}
-
+	
 	private QESReader qesReader;
 	private int timestep;
 	private List<QESFace> faces;

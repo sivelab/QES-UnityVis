@@ -231,6 +231,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseMaterial: {fileID: 2100000, guid: de29b70b15f604ead88dee24121034a6, type: 2}
   transparentMaterial: {fileID: 2100000, guid: 03cc1acc65c7f40df98c23d31af934b2, type: 2}
+  showChange: 1
+  changeRange: 20
 --- !u!23 &2044856917
 Renderer:
   m_ObjectHideFlags: 0
@@ -278,7 +280,7 @@ Transform:
   m_GameObject: {fileID: 2044856915}
   m_LocalRotation: {x: -.707106829, y: 0, z: 0, w: .707106709}
   m_LocalPosition: {x: -7.6135149, y: -1.87164867, z: 1.53479433}
-  m_LocalScale: {x: 4, y: 4, z: 4}
+  m_LocalScale: {x: .00999999978, y: .00999999978, z: .00999999978}
   m_Children:
   - {fileID: 2084791896}
   m_Father: {fileID: 0}
@@ -312,7 +314,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2084791893
 MonoBehaviour:
   m_ObjectHideFlags: 0

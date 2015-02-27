@@ -10,6 +10,7 @@
 	SubShader {
 		Tags { "RenderType"="Transparent" "Queue" = "Transparent" }
 		LOD 200
+		ZWrite Off
 		Pass {
 		
 		CGPROGRAM

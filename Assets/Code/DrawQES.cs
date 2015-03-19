@@ -16,7 +16,7 @@ public class DrawQES : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-gothenburg/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/Users/willemsn/scratch/export-gothenburg/");
 		
 		qesReader = new QESReader (directorySource);
 		
@@ -77,7 +77,47 @@ public class DrawQES : MonoBehaviour
 			}
 		}
 		
-		
+		// Render the sensors
+		foreach (QESSensor sensor in qesReader.Sensors) {
+			foreach (QESFace face in sensor.Faces) {
+				List<int> myIndices = new List<int> ();
+				vertices.Add (face.Anchor * scaleFactor);
+				normals.Add (face.Normal);
+				uvs.Add (new Vector2 (0, 0));
+				
+				vertices.Add ((face.Anchor + face.V1) * scaleFactor);
+				normals.Add (face.Normal);
+				uvs.Add (new Vector2 (1, 0));
+				
+				vertices.Add ((face.Anchor + face.V1 + face.V2) * scaleFactor);
+				normals.Add (face.Normal);
+				uvs.Add (new Vector2 (1, 1));
+				
+				vertices.Add ((face.Anchor + face.V2) * scaleFactor);
+				normals.Add (face.Normal);
+				uvs.Add (new Vector2 (0, 1));
+				
+				myIndices.Add (vertices.Count - 4);
+				myIndices.Add (vertices.Count - 3);
+				myIndices.Add (vertices.Count - 2);
+				
+				myIndices.Add (vertices.Count - 4);
+				myIndices.Add (vertices.Count - 2);
+				myIndices.Add (vertices.Count - 3);
+				
+				
+				myIndices.Add (vertices.Count - 4);
+				myIndices.Add (vertices.Count - 2);
+				myIndices.Add (vertices.Count - 1);
+				
+				myIndices.Add (vertices.Count - 4);
+				myIndices.Add (vertices.Count - 1);
+				myIndices.Add (vertices.Count - 2);
+				
+				indices.Add (myIndices);
+				faces.Add (face);
+			}
+		}
 		
 		Vector3[] verticesArray = new Vector3[vertices.Count];
 		Vector3[] normalsArray = new Vector3[normals.Count];
@@ -233,15 +273,15 @@ public class DrawQES : MonoBehaviour
 			timestep = 0;
 		}
 		
-		if (timestep >= qesReader.getTimestamps ().Length) {
-			timestep = qesReader.getTimestamps ().Length - 1;
-		}
-		if (timestep != oldTimestep
-		    || variableName != oldVariable
-		    || oldShowChange != showChange) {
-			System.Diagnostics.Stopwatch allMat = new System.Diagnostics.Stopwatch ();
-			setMaterials ();
-		}
+//		if (timestep >= qesReader.getTimestamps ().Length) {
+//			timestep = qesReader.getTimestamps ().Length - 1;
+//		}
+//		if (timestep != oldTimestep
+//		    || variableName != oldVariable
+//		    || oldShowChange != showChange) {
+//			System.Diagnostics.Stopwatch allMat = new System.Diagnostics.Stopwatch ();
+//			setMaterials ();
+//		}
 	}
 	
 	private QESReader qesReader;

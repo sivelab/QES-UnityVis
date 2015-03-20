@@ -273,15 +273,15 @@ public class DrawQES : MonoBehaviour
 			timestep = 0;
 		}
 		
-//		if (timestep >= qesReader.getTimestamps ().Length) {
-//			timestep = qesReader.getTimestamps ().Length - 1;
-//		}
-//		if (timestep != oldTimestep
-//		    || variableName != oldVariable
-//		    || oldShowChange != showChange) {
-//			System.Diagnostics.Stopwatch allMat = new System.Diagnostics.Stopwatch ();
-//			setMaterials ();
-//		}
+		if (timestep >= qesReader.getTimestamps ().Length) {
+			timestep = qesReader.getTimestamps ().Length - 1;
+		}
+		if (timestep != oldTimestep
+		    || variableName != oldVariable
+		    || oldShowChange != showChange) {
+			System.Diagnostics.Stopwatch allMat = new System.Diagnostics.Stopwatch ();
+			setMaterials ();
+		}
 	}
 	
 	private QESReader qesReader;

@@ -16,7 +16,7 @@ public class DrawQES : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/Users/willemsn/scratch/export-gothenburg/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/tmp/export-gothenburg/");
 		
 		qesReader = new QESReader (directorySource);
 		

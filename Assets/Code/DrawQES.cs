@@ -202,9 +202,6 @@ public class DrawQES : MonoBehaviour
 					maxVal = vars [i].Max;
 				}
 			}
-			if (variableName == "patch_nir" || variableName == "patch_par") {
-				maxVal *= 0.2f;
-			}
 		}
 
 		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {

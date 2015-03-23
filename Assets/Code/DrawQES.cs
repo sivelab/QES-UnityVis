@@ -13,15 +13,28 @@ public class DrawQES : MonoBehaviour
 	public float changeRange = 20;
 	public GUIText debugText;
 	public string variableName = "patch_nir";
+
+	// If we want an automated way to step from the start time to the end time
+	public bool automateTimestepping = false;
+	public float timePerTimestep = 3.0f; // 3 seconds per timestepp
+
 	// Use this for initialization
 	void Start ()
 	{
 		QESDirectorySource directorySource = new QESDirectorySource ("/tmp/export-gothenburg/");
 		
 		qesReader = new QESReader (directorySource);
-		
-		timestep = qesReader.getTimestamps ().Length / 2;
+
+		if (automateTimestepping) {
+			// if we're automating the time stepping, start at the beginning
+			timestep = 0;
+		}
+		else {
+			timestep = qesReader.getTimestamps ().Length / 2;
+		}
 		timestepUp = true;
+
+		timeWait = timePerTimestep;
 		
 		SetMesh ();
 	}
@@ -232,28 +245,50 @@ public class DrawQES : MonoBehaviour
 		int oldTimestep = timestep;
 		string oldVariable = variableName;
 		bool oldShowChange = showChange;
-		bool shift = Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift);
-		if (Input.GetKey (KeyCode.LeftBracket)) {
-			if (timestepUp) {
-				if (shift) {
-					timestep -= 6;
-				} else {
-					timestep--;
-				}
+
+		if (automateTimestepping) {
+
+			if (timePerTimestep > 0.0) {
+				// Decrease time to wait
+				timePerTimestep -= Time.deltaTime;
 			}
-			timestepUp = false;
-		} else if (Input.GetKey (KeyCode.RightBracket)) {
-			if (timestepUp) {
-				if (shift) {
-					timestep += 6;
-				} else {
-					timestep++;
-				}
+			else {
+				timePerTimestep = timeWait;
+				timestep++;
 			}
-			timestepUp = false;
+
+			if (timestep > qesReader.getTimestamps ().Length) {
+				// go back to regular control of timestepping
+				automateTimestepping = false;
+				oldTimestep = timestep;
+			}
+
 		} else {
-			timestepUp = true;
+
+			bool shift = Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift);
+			if (Input.GetKey (KeyCode.LeftBracket)) {
+				if (timestepUp) {
+					if (shift) {
+						timestep -= 6;
+					} else {
+						timestep--;
+					}
+				}
+				timestepUp = false;
+			} else if (Input.GetKey (KeyCode.RightBracket)) {
+				if (timestepUp) {
+					if (shift) {
+						timestep += 6;
+					} else {
+						timestep++;
+					}
+				}
+				timestepUp = false;
+			} else {
+				timestepUp = true;
+			}
 		}
+
 		if (Input.GetKey (KeyCode.C)) {
 			showChange = !showChange;
 		}
@@ -288,4 +323,5 @@ public class DrawQES : MonoBehaviour
 	private int timestep;
 	private List<QESFace> faces;
 	private bool timestepUp;
+	private float timeWait;
 }

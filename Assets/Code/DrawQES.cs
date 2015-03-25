@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -13,6 +14,11 @@ public class DrawQES : MonoBehaviour
 	public float changeRange = 20;
 	public GUIText debugText;
 	public string variableName = "patch_nir";
+
+	public Text maxTextBox;
+	public Text minTextBox;
+
+	public RawImage legend;
 
 	// If we want an automated way to step from the start time to the end time
 	public bool automateTimestepping = false;
@@ -203,6 +209,21 @@ public class DrawQES : MonoBehaviour
 				}
 			}
 		}
+
+		// Set the bounds in the legend - data is used to change text elements in the legend
+		maxTextBox.text = maxVal.ToString();
+		minTextBox.text = minVal.ToString();
+
+		//
+		// UI Panel has a Raw Image that has a texture. Try to get a hold of texture and set a 1D texture to map across the space?
+		//
+		Debug.Log ("ramp length = " + ramp.Length () );
+
+		Texture2D legendTex = new Texture2D (1, ramp.Length ());
+		Color[] colorRamp = ramp.Ramp ();
+		legendTex.SetPixels (colorRamp);
+		legend.texture = legendTex;
+
 
 		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {
 			

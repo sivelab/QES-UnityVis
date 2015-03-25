@@ -90,6 +90,18 @@ public class ColorRamp
 		return colors [colors.Count - 1];
 	}
 
+	// return the length of the color ramp - how many nodes are in it
+	public int Length () 
+	{
+		return colors.Count;
+	}
+
+	// return the color ramp itself
+	public Color[] Ramp() 
+	{
+		return colors.ToArray ();
+	}
+
 	private string name;
 	private static Dictionary<string, ColorRamp> colorRamps;
 	private static bool loaded = false;

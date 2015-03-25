@@ -168,9 +168,6 @@ public class QESReader
 
 	private IQESDataSource dataSource;
 
-	// private QESBuilding[] buildings;
-	// private QESSensor[] sensors;
-
 	private List< QESBuilding > buildings;
 	private List< QESSensor > sensors;
 

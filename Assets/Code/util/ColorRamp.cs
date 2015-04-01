@@ -90,16 +90,14 @@ public class ColorRamp
 		return colors [colors.Count - 1];
 	}
 
-	// return the length of the color ramp - how many nodes are in it
-	public int Length () 
+	// return the color ramp resampled to a given number of samples
+	public Color[] Ramp(int numSamples) 
 	{
-		return colors.Count;
-	}
-
-	// return the color ramp itself
-	public Color[] Ramp() 
-	{
-		return colors.ToArray ();
+		Color[] result = new Color[numSamples];
+		for (int i=0; i<numSamples; i++) {
+			result[i] = Value(i / (numSamples - 1.0f));
+		}
+		return result;
 	}
 
 	private string name;

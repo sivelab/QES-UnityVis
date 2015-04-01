@@ -217,11 +217,13 @@ public class DrawQES : MonoBehaviour
 		//
 		// UI Panel has a Raw Image that has a texture. Try to get a hold of texture and set a 1D texture to map across the space?
 		//
-		Debug.Log ("ramp length = " + ramp.Length () );
+		int numSamples = 50;
 
-		Texture2D legendTex = new Texture2D (1, ramp.Length ());
-		Color[] colorRamp = ramp.Ramp ();
+		Texture2D legendTex = new Texture2D (1, numSamples);
+		Color[] colorRamp = ramp.Ramp (numSamples);
 		legendTex.SetPixels (colorRamp);
+		legendTex.wrapMode = TextureWrapMode.Clamp;
+		legendTex.Apply ();
 		legend.texture = legendTex;
 
 

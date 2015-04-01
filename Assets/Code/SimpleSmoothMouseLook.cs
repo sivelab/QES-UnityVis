@@ -8,6 +8,7 @@ public class SimpleSmoothMouseLook : MonoBehaviour
 {
 	Vector2 _mouseAbsolute;
 	Vector2 _smoothMouse;
+	bool reacting = true;
 	
 	public Vector2 clampInDegrees = new Vector2(360, 180);
 	public bool lockCursor;
@@ -31,6 +32,9 @@ public class SimpleSmoothMouseLook : MonoBehaviour
 	
 	void Update()
 	{
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			reacting = !reacting;
+		}
 		// Ensure the cursor is always locked when set
 		Screen.lockCursor = lockCursor;
 		
@@ -40,6 +44,10 @@ public class SimpleSmoothMouseLook : MonoBehaviour
 		
 		// Get raw mouse input for a cleaner reading on more sensitive mice.
 		var mouseDelta = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+
+		if (!reacting) {
+			mouseDelta = new Vector2 (0, 0);
+		}
 		
 		// Scale input against the sensitivity setting and multiply that against the smoothing value.
 		mouseDelta = Vector2.Scale(mouseDelta, new Vector2(sensitivity.x * smoothing.x, sensitivity.y * smoothing.y));

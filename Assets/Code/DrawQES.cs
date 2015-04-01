@@ -6,7 +6,7 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
-public class DrawQES : MonoBehaviour
+public class DrawQES : MonoBehaviour, IQESSettingsUser
 {
 	public Material baseMaterial;
 	public Material transparentMaterial;
@@ -19,34 +19,26 @@ public class DrawQES : MonoBehaviour
 	public Text minTextBox;
 
 	public RawImage legend;
+	
+	void ReloadMesh() {
+		SetMesh ();
+	}
 
-	// If we want an automated way to step from the start time to the end time
-	public bool automateTimestepping = false;
-	public float timePerTimestep = 3.0f; // 3 seconds per timestepp
+	void ReloadData() {
+		SetMaterials ();
+	}
 
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/tmp/export-gothenburg/");
-		
-		qesReader = new QESReader (directorySource);
-
-		if (automateTimestepping) {
-			// if we're automating the time stepping, start at the beginning
-			timestep = 0;
-		}
-		else {
-			timestep = qesReader.getTimestamps ().Length / 2;
-		}
-		timestepUp = true;
-
-		timeWait = timePerTimestep;
-		
-		SetMesh ();
+		// Do nothing since we might not have QESSettings yet
 	}
 	
 	void SetMesh ()
 	{
+		if (qesSettings == null || qesSettings.Reader == null) {
+			return;
+		}
 		List<Vector3> vertices = new List<Vector3> ();
 		List<Vector3> normals = new List<Vector3> ();
 		List<Vector2> uvs = new List<Vector2> ();
@@ -55,7 +47,7 @@ public class DrawQES : MonoBehaviour
 		
 		float scaleFactor = 1.0f;
 		
-		foreach (QESBuilding building in qesReader.Buildings) {
+		foreach (QESBuilding building in qesSettings.Reader.Buildings) {
 			foreach (QESFace face in building.Faces) {
 				List<int> myIndices = new List<int> ();
 				vertices.Add (face.Anchor * scaleFactor);
@@ -97,7 +89,7 @@ public class DrawQES : MonoBehaviour
 		}
 		
 		// Render the sensors
-		foreach (QESSensor sensor in qesReader.Sensors) {
+		foreach (QESSensor sensor in qesSettings.Reader.Sensors) {
 			foreach (QESFace face in sensor.Faces) {
 				List<int> myIndices = new List<int> ();
 				vertices.Add (face.Anchor * scaleFactor);
@@ -166,12 +158,12 @@ public class DrawQES : MonoBehaviour
 		
 		GetComponent<MeshFilter> ().mesh = mesh;
 		
-		setMaterials ();
+		SetMaterials ();
 	}
 	
-	void setMaterials ()
+	void SetMaterials ()
 	{
-		QESTimestamp ts = qesReader.getTimestamps () [timestep];
+		QESTimestamp ts = qesSettings.Reader.getTimestamps () [qesSettings.CurrentTimestep];
 		debugText.text = (variableName + ": " + ts.Month + "/" + ts.Day + " " + ts.Hour + ":" + ts.Minute);
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		ColorRamp ramp;
@@ -186,15 +178,15 @@ public class DrawQES : MonoBehaviour
 		
 		
 
-		float[] data = qesReader.GetPatchData (varName, timestep);
+		float[] data = qesSettings.Reader.GetPatchData (varName, qesSettings.CurrentTimestep);
 		if (showChange) {
-			float [] nextData = qesReader.GetPatchData (varName, timestep + 1);
+			float [] nextData = qesSettings.Reader.GetPatchData (varName, qesSettings.CurrentTimestep + 1);
 			for (int i=0; i<data.Length; i++) {
 				data [i] = nextData [i] - data [i];
 			}
 		}
 		
-		QESVariable[] vars = qesReader.getVariables ();
+		QESVariable[] vars = qesSettings.Reader.getVariables ();
 		float minVal = -1, maxVal = -1;
 		float volMinVal = -1, volMaxVal = -1;
 
@@ -262,86 +254,47 @@ public class DrawQES : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		int oldTimestep = timestep;
+		if (qesSettings == null) {
+			return;
+		}
 		string oldVariable = variableName;
 		bool oldShowChange = showChange;
 
-		if (automateTimestepping) {
-
-			if (timePerTimestep > 0.0) {
-				// Decrease time to wait
-				timePerTimestep -= Time.deltaTime;
-			}
-			else {
-				timePerTimestep = timeWait;
-				timestep++;
-			}
-
-			if (timestep > qesReader.getTimestamps ().Length) {
-				// go back to regular control of timestepping
-				automateTimestepping = false;
-				oldTimestep = timestep;
-			}
-
-		} else {
-
-			bool shift = Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift);
-			if (Input.GetKey (KeyCode.LeftBracket)) {
-				if (timestepUp) {
-					if (shift) {
-						timestep -= 6;
-					} else {
-						timestep--;
-					}
-				}
-				timestepUp = false;
-			} else if (Input.GetKey (KeyCode.RightBracket)) {
-				if (timestepUp) {
-					if (shift) {
-						timestep += 6;
-					} else {
-						timestep++;
-					}
-				}
-				timestepUp = false;
-			} else {
-				timestepUp = true;
-			}
-		}
-
-		if (Input.GetKey (KeyCode.C)) {
+		if (Input.GetKeyDown (KeyCode.C)) {
 			showChange = !showChange;
 		}
-		if (Input.GetKey (KeyCode.N)) {
+		if (Input.GetKeyDown (KeyCode.N)) {
 			variableName = "patch_nir";
 		}
-		if (Input.GetKey (KeyCode.P)) {
+		if (Input.GetKeyDown (KeyCode.P)) {
 			variableName = "patch_par";
 		}
-		if (Input.GetKey (KeyCode.L)) {
+		if (Input.GetKeyDown (KeyCode.L)) {
 			variableName = "patch_longwave";
 		}
-		if (Input.GetKey (KeyCode.T)) {
+		if (Input.GetKeyDown (KeyCode.T)) {
 			variableName = "patch_temperature";
 		}
-		if (timestep < 0) {
-			timestep = 0;
-		}
-		
-		if (timestep >= qesReader.getTimestamps ().Length) {
-			timestep = qesReader.getTimestamps ().Length - 1;
-		}
-		if (timestep != oldTimestep
-		    || variableName != oldVariable
+
+		if (
+		    variableName != oldVariable
 		    || oldShowChange != showChange) {
 			System.Diagnostics.Stopwatch allMat = new System.Diagnostics.Stopwatch ();
-			setMaterials ();
+			SetMaterials ();
 		}
 	}
-	
-	private QESReader qesReader;
-	private int timestep;
+
+	public void SetSettings(QESSettings settings) {
+		if (qesSettings != null) {
+			qesSettings.DatasetChanged -= ReloadMesh;
+			qesSettings.TimestepChanged -= ReloadData;
+		}
+		qesSettings = settings;
+		qesSettings.DatasetChanged += ReloadMesh;
+		qesSettings.TimestepChanged += ReloadData;
+		ReloadMesh ();
+	}
+
+	private QESSettings qesSettings;
 	private List<QESFace> faces;
-	private bool timestepUp;
-	private float timeWait;
 }

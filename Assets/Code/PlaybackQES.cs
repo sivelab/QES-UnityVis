@@ -48,6 +48,10 @@ public class PlaybackQES : MonoBehaviour, IQESSettingsUser {
 		}
 	}
 
+	public void StopPlaying() {
+		playing = false;
+	}
+
 	public void UpdateUI() {
 		if (qesSettings == null || qesSettings.Reader == null) {
 			return;
@@ -64,10 +68,12 @@ public class PlaybackQES : MonoBehaviour, IQESSettingsUser {
 		if (qesSettings != null) {
 			qesSettings.DatasetChanged -= UpdateUI;
 			qesSettings.TimestepChanged -= UpdateUI;
+			qesSettings.InteractiveChanged -= StopPlaying;
 		}
 		qesSettings = settings;
 		qesSettings.DatasetChanged += UpdateUI;
 		qesSettings.TimestepChanged += UpdateUI;
+		qesSettings.InteractiveChanged += StopPlaying;
 		UpdateUI ();
 	}
 

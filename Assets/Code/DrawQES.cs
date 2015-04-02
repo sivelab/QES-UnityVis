@@ -258,6 +258,9 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 		if (qesSettings == null) {
 			return;
 		}
+		if (!qesSettings.IsInteractive) {
+			return;
+		}
 		string oldVariable = variableName;
 		bool oldShowChange = showChange;
 

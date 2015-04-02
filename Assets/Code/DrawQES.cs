@@ -18,7 +18,7 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 	public Text maxTextBox;
 	public Text minTextBox;
 
-	public RawImage legend;
+	public Image legend;
 	
 	void ReloadMesh() {
 		SetMesh ();
@@ -216,7 +216,8 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 		legendTex.SetPixels (colorRamp);
 		legendTex.wrapMode = TextureWrapMode.Clamp;
 		legendTex.Apply ();
-		legend.texture = legendTex;
+		Sprite spr = Sprite.Create (legendTex, new Rect (0, 0, legendTex.width, legendTex.height), new Vector2 (0, 0), 1);
+		legend.sprite = spr;
 
 
 		for (int faceIndex=0; faceIndex < faces.Count; faceIndex++) {

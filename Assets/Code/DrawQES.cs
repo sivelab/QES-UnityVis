@@ -17,6 +17,7 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 
 	public Text maxTextBox;
 	public Text minTextBox;
+	public Text unitTextBox;
 
 	public Image legend;
 	
@@ -189,15 +190,18 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 		QESVariable[] vars = qesSettings.Reader.getVariables ();
 		float minVal = -1, maxVal = -1;
 		float volMinVal = -1, volMaxVal = -1;
+		string unitString = "Unknown";
 
 		if (showChange) {
 			minVal = -Mathf.Abs (changeRange);
 			maxVal = Mathf.Abs (changeRange);
+			unitString = "Difference";
 		} else {
 			for (int i=0; i<vars.Length; i++) {
 				if (vars [i].Name == varName) {
 					minVal = vars [i].Min;
 					maxVal = vars [i].Max;
+					unitString = vars[i].Unit;
 				}
 			}
 		}
@@ -205,6 +209,7 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 		// Set the bounds in the legend - data is used to change text elements in the legend
 		maxTextBox.text = maxVal.ToString();
 		minTextBox.text = minVal.ToString();
+		unitTextBox.text = unitString;
 
 		//
 		// UI Panel has a Raw Image that has a texture. Try to get a hold of texture and set a 1D texture to map across the space?

@@ -10,6 +10,7 @@ public class QESSettingsSetter : MonoBehaviour {
 			set.LoadDirectory ("/tmp/export-gothenburg/");
 		} catch {
 		}
+
 		IQESSettingsUser[] users = GetComponentsInChildren<IQESSettingsUser> ();
 		foreach (IQESSettingsUser user in users) {
 			user.SetSettings (set);

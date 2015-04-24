@@ -30,6 +30,11 @@ public class QESReader
 		}
 	}
 
+	public bool hasAircellData()
+	{
+		return containsAircellData;
+	}
+
 	private void LoadBuildings ()
 	{
 		XmlDocument doc = new XmlDocument ();
@@ -123,7 +128,15 @@ public class QESReader
 			                               varNode.Attributes ["longname"].Value,
 			                               varNode.Attributes ["unit"].Value,
 			                               float.Parse (varNode.Attributes ["min"].Value),
-			                               float.Parse (varNode.Attributes ["max"].Value));
+			                               float.Parse (varNode.Attributes ["max"].Value),
+			                               float.Parse (varNode.Attributes ["mean"].Value),
+			                               float.Parse (varNode.Attributes ["stdev"].Value));
+
+			// If any of the variables hold airCell data, we need to enable the volume visualization program
+			if (varNode.Attributes["isAircell"].Value == "true") {
+				containsAircellData = true;
+			}
+
 		}
 
 		XmlElement dimsElement = topElement ["Dimensions"];
@@ -173,6 +186,8 @@ public class QESReader
 
 	private QESTimestamp[] timestamps;
 	private QESVariable[] variables;
+
+	private bool containsAircellData;
 
 	public Vector3 WorldDims { get; private set; }
 

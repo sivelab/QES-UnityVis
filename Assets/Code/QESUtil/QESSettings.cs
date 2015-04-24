@@ -14,6 +14,9 @@ public class QESSettings {
 	public event SettingsUpdate DatasetChanged;
 	public event SettingsUpdate TimestepChanged;
 	public event SettingsUpdate InteractiveChanged;
+
+	// 
+	public event SettingsUpdate RenderCapChanged;
 	
 	public void LoadDirectory(string path) {
 		try {

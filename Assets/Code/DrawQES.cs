@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -13,14 +14,14 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 	public bool showChange = false;
 	public float changeRange = 20;
 	public GUIText debugText;
-	public string variableName = "patch_nir";
+	public string variableName = "patch_temperature";
 
 	public Text maxTextBox;
 	public Text minTextBox;
 	public Text unitTextBox;
 
 	public Image legend;
-	
+
 	void ReloadMesh() {
 		SetMesh ();
 	}
@@ -28,6 +29,7 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 	void ReloadData() {
 		SetMaterials ();
 	}
+
 
 	// Use this for initialization
 	void Start ()
@@ -186,22 +188,42 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 				data [i] = nextData [i] - data [i];
 			}
 		}
-		
+
+		//
+		// Compute the local mean and std dev
+		//
+		float localMean = 0;
+		for (int i=0; i<data.Length; i++) {
+			localMean += data [i];
+		}
+		localMean /= data.Length;
+
+		float localVar = 0;
+		for (int i=0; i<data.Length; i++) {
+			localVar += ( (localMean - data [i]) * (localMean - data[i]) );
+		}
+		float localStdev = (float)Math.Sqrt (localVar);
+
+	
 		QESVariable[] vars = qesSettings.Reader.getVariables ();
 		float minVal = -1, maxVal = -1;
 		float volMinVal = -1, volMaxVal = -1;
+		float meanVal = 0;
+		float stdev = 0;
 		string unitString = "Unknown";
 
 		if (showChange) {
 			minVal = -Mathf.Abs (changeRange);
 			maxVal = Mathf.Abs (changeRange);
-			unitString = "Difference";
+			unitString = "Difference"; // nned a way to set the units here too... [in " + vars[i].Unit + "]";
 		} else {
 			for (int i=0; i<vars.Length; i++) {
 				if (vars [i].Name == varName) {
 					minVal = vars [i].Min;
 					maxVal = vars [i].Max;
 					unitString = vars[i].Unit;
+					meanVal = vars [i].Mean;
+					stdev = vars[i].Stdev;
 				}
 			}
 		}
@@ -210,7 +232,7 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 		maxTextBox.text = maxVal.ToString();
 		minTextBox.text = minVal.ToString();
 		unitTextBox.text = unitString;
-
+		
 		//
 		// UI Panel has a Raw Image that has a texture. Try to get a hold of texture and set a 1D texture to map across the space?
 		//
@@ -218,6 +240,12 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 
 		Texture2D legendTex = new Texture2D (1, numSamples);
 		Color[] colorRamp = ramp.Ramp (numSamples);
+
+		// Mark mean value on the ramp
+		float proportion = localMean / (maxVal - minVal);
+		int meanIdx = (int)(proportion * numSamples);
+		colorRamp [meanIdx] = Color.red;
+
 		legendTex.SetPixels (colorRamp);
 		legendTex.wrapMode = TextureWrapMode.Clamp;
 		legendTex.Apply ();

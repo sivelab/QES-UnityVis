@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
-public class DrawQESVolume2 : MonoBehaviour
+public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser
 {
 	public Material transparentMaterial;
 	public Camera mainCamera;
@@ -13,14 +13,25 @@ public class DrawQESVolume2 : MonoBehaviour
 
 	public bool doNoise = true;
 
+
+	void ReloadMesh() {
+		SetMesh ();
+	}
+	
+	void ReloadData() {
+		// SetMaterials ();
+		CreateTexture ();
+		CreateNoiseTexture ();
+	}
+
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-richards/");
+		// this is no longer needed since we get data from QESSettings
+		// QESDirectorySource directorySource = new QESDirectorySource ("/Users/willemsn/umd/quic_envsim/volumeData/tmp/export-uehara");
+		// qesReader = new QESReader (directorySource);
 		
-		qesReader = new QESReader (directorySource);
-		
-		timestep = qesReader.getTimestamps ().Length / 2;
+		timestep = qesSettings.Reader.getTimestamps ().Length / 2;
 		
 		childs = new List<GameObject> ();
 
@@ -79,21 +90,21 @@ public class DrawQESVolume2 : MonoBehaviour
 	void CreateTexture ()
 	{
 		string volumeName = "ac_temperature";
-		float[] volData = qesReader.GetPatchData (volumeName, timestep);
-		Vector3 patchDims = qesReader.PatchDims;
+		float[] volData = qesSettings.Reader.GetPatchData (volumeName, timestep);
+		Vector3 patchDims = qesSettings.Reader.PatchDims;
 		
 		QESVariable var = null;
 		
-		for (int i=0; i<qesReader.getVariables().Length; i++) {
-			if (qesReader.getVariables () [i].Name == volumeName) {
-				var = qesReader.getVariables () [i];
+		for (int i=0; i<qesSettings.Reader.getVariables().Length; i++) {
+			if (qesSettings.Reader.getVariables () [i].Name == volumeName) {
+				var = qesSettings.Reader.getVariables () [i];
 			}
 		}
 
 		float maxVal = var.Max;
 		float minVal = var.Min;
 
-		Vector3 worldDims = qesReader.WorldDims;
+		Vector3 worldDims = qesSettings.Reader.WorldDims;
 		int width = (int)worldDims.x;
 		int height = (int)worldDims.y;
 		int depth = (int)worldDims.z;
@@ -132,6 +143,10 @@ public class DrawQESVolume2 : MonoBehaviour
 	
 	void SetMesh ()
 	{	
+		if (qesSettings == null || qesSettings.Reader == null) {
+			return;
+		}
+
 		CreateNoiseTexture ();
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		if (mesh == null) {
@@ -183,8 +198,8 @@ public class DrawQESVolume2 : MonoBehaviour
 		// components of the texture coordinate.  In the fragment shader,
 		// we need to convert this back into a vec3.
 
-		Vector3 worldDims = qesReader.WorldDims;
-		Vector3 patchDims = qesReader.PatchDims;
+		Vector3 worldDims = qesSettings.Reader.WorldDims;
+		Vector3 patchDims = qesSettings.Reader.PatchDims;
 
 		Vector3 worldCameraPosition = mainCamera.transform.position;
 		Vector3 worldCameraOrientation = mainCamera.transform.forward;
@@ -283,6 +298,13 @@ public class DrawQESVolume2 : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
+		if (qesSettings == null) {
+			return;
+		}
+		if (!qesSettings.IsInteractive) {
+			return;
+		}
+
 		SetMesh ();
 		int oldTimestep = timestep;
 		if (Input.GetKey (KeyCode.LeftBracket)) {
@@ -295,16 +317,28 @@ public class DrawQESVolume2 : MonoBehaviour
 			timestep = 0;
 		}
 		
-		if (timestep >= qesReader.getTimestamps ().Length) {
-			timestep = qesReader.getTimestamps ().Length - 1;
+		if (timestep >= qesSettings.Reader.getTimestamps ().Length) {
+			timestep = qesSettings.Reader.getTimestamps ().Length - 1;
 		}
 		if (timestep != oldTimestep) {
-			QESTimestamp ts = qesReader.getTimestamps () [timestep];
+			QESTimestamp ts = qesSettings.Reader.getTimestamps () [timestep];
 			Debug.Log ("Current time: " + ts.Hour + ":" + ts.Minute);
 		}
 	}
+
+	public void SetSettings(QESSettings settings) {
+		if (qesSettings != null) {
+			qesSettings.DatasetChanged -= ReloadMesh;
+			qesSettings.TimestepChanged -= ReloadData;
+		}
+		qesSettings = settings;
+		qesSettings.DatasetChanged += ReloadMesh;
+		qesSettings.TimestepChanged += ReloadData;
+		ReloadMesh ();
+	}
+
+	private QESSettings qesSettings;
 	
-	private QESReader qesReader;
 	private int timestep;
 	private List<QESFace> faces;
 	private List<GameObject> childs;

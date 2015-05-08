@@ -49,7 +49,7 @@
 	    half4 frag (v2f i) : COLOR
 	    {
 	    	float noiseVal = tex2D(_NoiseTex, i.screenPos * 10.0).x;
-	    	half4 noiseVector;
+	    	half4 noiseVector = half4(0.0, 0.0, 0.0, 0.0);
 	    	noiseVector = normalize(half4(i.uvw,1.0) - _CameraTexPosition) / _NumSlices;
 	    	half3 newvw = i.uvw + (noiseVal - 0.5) * 150 * noiseVector.xyz;
 	    	if (newvw.x < 0.0 ||

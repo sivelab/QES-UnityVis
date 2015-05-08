@@ -10,13 +10,14 @@ public class DrawQESVolume2 : MonoBehaviour
 	public Material transparentMaterial;
 	public Camera mainCamera;
 	public int numSlices = 20;
+	public string volumeName = "ac_temperature";
 
 	public bool doNoise = true;
 
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-richards/");
+		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
 		
 		qesReader = new QESReader (directorySource);
 		
@@ -78,7 +79,6 @@ public class DrawQESVolume2 : MonoBehaviour
 
 	void CreateTexture ()
 	{
-		string volumeName = "ac_temperature";
 		float[] volData = qesReader.GetPatchData (volumeName, timestep);
 		Vector3 patchDims = qesReader.PatchDims;
 		
@@ -290,6 +290,21 @@ public class DrawQESVolume2 : MonoBehaviour
 		}
 		if (Input.GetKey (KeyCode.RightBracket)) {
 			timestep++;
+		}
+		if (Input.GetKeyDown (KeyCode.Alpha1)) {
+			volumeName = "ac_temperature";
+			material = null;
+			CreateTexture ();
+		}
+		if (Input.GetKeyDown (KeyCode.Alpha2)) {
+			volumeName = "ac_temps";
+			material = null;
+			CreateTexture ();
+		}
+		if (Input.GetKeyDown (KeyCode.Alpha3)) {
+			volumeName = "ac_diff";
+			material = null;
+			CreateTexture ();
 		}
 		if (timestep < 0) {
 			timestep = 0;

@@ -14,6 +14,7 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 	public float changeRange = 20;
 	public GUIText debugText;
 	public string variableName = "patch_nir";
+	public bool addRandomNoise = false;
 
 	public Text maxTextBox;
 	public Text minTextBox;
@@ -238,9 +239,17 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 			int baseIndex = faces [faceIndex].PatchIndex;
 			
 			Color[] colors = new Color[sampleCount];
+
+			float faceRandom = 0;
+			if (addRandomNoise) {
+				faceRandom = Random.value * 0.3f;
+			}
 			
 			for (int patch=baseIndex; patch<baseIndex + sampleCount; patch++) {
 				float mappedVal = (data [patch] - minVal) / (maxVal - minVal);
+				if (addRandomNoise) {
+					mappedVal = mappedVal * 0.4f + Random.value * 0.3f + faceRandom;
+				}
 				colors [patch - baseIndex] = ramp.Value (mappedVal);
 			}
 			

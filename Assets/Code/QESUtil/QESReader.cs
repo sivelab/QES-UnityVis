@@ -119,11 +119,17 @@ public class QESReader
 		variables = new QESVariable[variableNodes.Count];
 		for (int i=0; i<variableNodes.Count; i++) {
 			XmlNode varNode = variableNodes.Item (i);
+			QESVariable.Type t = QESVariable.Type.PATCH;
+			XmlNode typeNode = varNode.Attributes.GetNamedItem("isAircell");
+			if (typeNode != null && string.Compare( typeNode.Value, "true", true) == 0) {
+				t = QESVariable.Type.AIRCELL;
+			}
 			variables [i] = new QESVariable (varNode.Attributes ["name"].Value,
 			                               varNode.Attributes ["longname"].Value,
 			                               varNode.Attributes ["unit"].Value,
 			                               float.Parse (varNode.Attributes ["min"].Value),
-			                               float.Parse (varNode.Attributes ["max"].Value));
+			                               float.Parse (varNode.Attributes ["max"].Value),
+			                               t);
 		}
 
 		XmlElement dimsElement = topElement ["Dimensions"];
@@ -142,6 +148,16 @@ public class QESReader
 	}
 
 	public float[] GetPatchData (string var, int timestamp)
+	{
+		byte[] rawBytes = dataSource.BinaryFileContents (var + timestamp.ToString ());
+		float[] vals = new float[rawBytes.Length / 4];
+		for (int i=0; i<vals.Length; i++) {
+			vals [i] = System.BitConverter.ToSingle (rawBytes, i * 4);
+		}
+		return vals;
+	}
+
+	public float[] GetAircellData(string var, int timestamp)
 	{
 		byte[] rawBytes = dataSource.BinaryFileContents (var + timestamp.ToString ());
 		float[] vals = new float[rawBytes.Length / 4];

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
-public class DrawQESVolume2 : MonoBehaviour
+public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser
 {
 	public Material transparentMaterial;
 	public Camera mainCamera;
@@ -17,21 +17,26 @@ public class DrawQESVolume2 : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		QESDirectorySource directorySource = new QESDirectorySource ("/scratch/schr0640/tmp/export-uehara/");
-		
-		qesReader = new QESReader (directorySource);
-		
-		timestep = qesReader.getTimestamps ().Length / 2;
-		
 		childs = new List<GameObject> ();
 
-		CreateTexture ();
-
 		CreateNoiseTexture ();
-		
+	}
+
+	public void ReloadData() {
+		material = null;
+		CreateTexture ();
 		SetMesh ();
-		
-		
+	}
+
+	public void SetSettings(QESSettings set) {
+		if (settings != null) {
+			settings.DatasetChanged -= ReloadData;
+			settings.TimestepChanged -= ReloadData;
+		}
+		settings = set;
+
+		settings.DatasetChanged += ReloadData;
+		settings.TimestepChanged += ReloadData;
 	}
 
 	int nearestPowerOfTwo (int val)
@@ -79,21 +84,21 @@ public class DrawQESVolume2 : MonoBehaviour
 
 	void CreateTexture ()
 	{
-		float[] volData = qesReader.GetPatchData (volumeName, timestep);
-		Vector3 patchDims = qesReader.PatchDims;
+		float[] volData = settings.Reader.GetPatchData (volumeName, settings.CurrentTimestep);
+		Vector3 patchDims = settings.Reader.PatchDims;
 		
 		QESVariable var = null;
 		
-		for (int i=0; i<qesReader.getVariables().Length; i++) {
-			if (qesReader.getVariables () [i].Name == volumeName) {
-				var = qesReader.getVariables () [i];
+		for (int i=0; i<settings.Reader.getVariables().Length; i++) {
+			if (settings.Reader.getVariables () [i].Name == volumeName) {
+				var = settings.Reader.getVariables () [i];
 			}
 		}
 
 		float maxVal = var.Max;
 		float minVal = var.Min;
 
-		Vector3 worldDims = qesReader.WorldDims;
+		Vector3 worldDims = settings.Reader.WorldDims;
 		int width = (int)worldDims.x;
 		int height = (int)worldDims.y;
 		int depth = (int)worldDims.z;
@@ -138,11 +143,6 @@ public class DrawQESVolume2 : MonoBehaviour
 			mesh = new Mesh ();
 			GetComponent<MeshFilter> ().mesh = mesh;
 
-			//Material mat = new Material (transparentMaterial);
-			//mat.mainTexture = cubeTex;
-			//mat.SetVector("_RelativeBounds", relativeAmounts);
-			//GetComponent<MeshRenderer> ().material = mat;
-
 		}
 		if (material == null) {
 			material = new Material (transparentMaterial);
@@ -183,8 +183,8 @@ public class DrawQESVolume2 : MonoBehaviour
 		// components of the texture coordinate.  In the fragment shader,
 		// we need to convert this back into a vec3.
 
-		Vector3 worldDims = qesReader.WorldDims;
-		Vector3 patchDims = qesReader.PatchDims;
+		Vector3 worldDims = settings.Reader.WorldDims;
+		Vector3 patchDims = settings.Reader.PatchDims;
 
 		Vector3 worldCameraPosition = mainCamera.transform.position;
 		Vector3 worldCameraOrientation = mainCamera.transform.forward;
@@ -195,7 +195,6 @@ public class DrawQESVolume2 : MonoBehaviour
 		localCenter.Scale (patchDims);
 		float localRadius = localCenter.magnitude;
 
-		//Vector3 localN = (localCameraPosition - localCenter).normalized;
 		Vector3 localN = -localCameraOrientation.normalized;
 		Vector3 localU = new Vector3 (1, 0, 0);
 		Vector3 localV = Vector3.Cross (localN, localU);
@@ -284,13 +283,6 @@ public class DrawQESVolume2 : MonoBehaviour
 	void Update ()
 	{
 		SetMesh ();
-		int oldTimestep = timestep;
-		if (Input.GetKey (KeyCode.LeftBracket)) {
-			timestep--;
-		}
-		if (Input.GetKey (KeyCode.RightBracket)) {
-			timestep++;
-		}
 		if (Input.GetKeyDown (KeyCode.Alpha1)) {
 			volumeName = "ac_temperature";
 			material = null;
@@ -306,25 +298,14 @@ public class DrawQESVolume2 : MonoBehaviour
 			material = null;
 			CreateTexture ();
 		}
-		if (timestep < 0) {
-			timestep = 0;
-		}
-		
-		if (timestep >= qesReader.getTimestamps ().Length) {
-			timestep = qesReader.getTimestamps ().Length - 1;
-		}
-		if (timestep != oldTimestep) {
-			QESTimestamp ts = qesReader.getTimestamps () [timestep];
-			Debug.Log ("Current time: " + ts.Hour + ":" + ts.Minute);
-		}
+
 	}
-	
-	private QESReader qesReader;
-	private int timestep;
+
 	private List<QESFace> faces;
 	private List<GameObject> childs;
 	private Texture3D cubeTex;
 	private Texture2D noiseTex;
 	private Vector4 relativeAmounts;
 	private Material material;
+	private QESSettings settings;
 }

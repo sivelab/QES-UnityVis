@@ -15,6 +15,14 @@ public interface IQESDataSource
 	/// <param name="filename">Filename.</param>
 	byte[] BinaryFileContents(string filename);
 
+	/*
+	/// <summary>
+	/// Determines whether given file exists
+	/// </summary>
+	/// <returns><c>true</c>, if file exists, <c>false</c> otherwise.</returns>
+	/// <param name="filename">Filename.</param>
+	bool FileExists(string filename);
+*/
 	/// <summary>
 	/// List all files available for reading
 	/// </summary>

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
-public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser
+public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 {
 	public Material transparentMaterial;
 	public Camera mainCamera;
@@ -299,6 +299,28 @@ public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser
 			CreateTexture ();
 		}
 
+	}
+
+	// IQESVisualization methods:
+
+	public QESVariable.Type VariableType() {
+		return QESVariable.Type.AIRCELL;
+	}
+	
+	public string CurrentVariable() {
+		return volumeName;
+	}
+	
+	public void SetCurrentVariable(string var) {
+		if (volumeName != var) {
+			volumeName = var;
+			material = null;
+			CreateTexture ();
+		}
+	}
+
+	public string VisualizationName() {
+		return "Volume Scalar Fields";
 	}
 
 	private List<QESFace> faces;

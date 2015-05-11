@@ -6,7 +6,7 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
-public class DrawQES : MonoBehaviour, IQESSettingsUser
+public class DrawQES : MonoBehaviour, IQESSettingsUser, IQESVisualization
 {
 	public Material baseMaterial;
 	public Material transparentMaterial;
@@ -311,6 +311,27 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser
 		qesSettings.DatasetChanged += ReloadMesh;
 		qesSettings.TimestepChanged += ReloadData;
 		ReloadMesh ();
+	}
+
+	// IQESVisualization member functions:
+
+	public QESVariable.Type VariableType() {
+		return QESVariable.Type.PATCH;
+	}
+	
+	public string CurrentVariable() {
+		return variableName;
+	}
+	
+	public void SetCurrentVariable(string var) {
+		if (var != variableName) {
+			variableName = var;
+			SetMaterials ();
+		}
+	}
+
+	public string VisualizationName() {
+		return "Surface Scalar Fields";
 	}
 
 	private QESSettings qesSettings;

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[ExecuteInEditMode]
 public class SideBySideCamera : MonoBehaviour
 {
 
@@ -8,7 +9,7 @@ public class SideBySideCamera : MonoBehaviour
 	public Camera rightEyeCamera;
 	public float NearClipPlane = 0.01f;
 	public float FarClipPlane = 100f;
-	[Range(0,179)]
+	[Range(0.1,179)]
 	public float
 		FieldOfView = 60f;
 	[Range(0,1)]

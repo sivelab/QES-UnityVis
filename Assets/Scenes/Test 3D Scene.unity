@@ -1155,7 +1155,7 @@ GameObject:
   - 114: {fileID: 481770290}
   - 114: {fileID: 481770289}
   m_Layer: 0
-  m_Name: Main Camera 1
+  m_Name: rightEye
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1340,6 +1340,7 @@ GameObject:
   - 4: {fileID: 540103594}
   - 114: {fileID: 540103596}
   - 114: {fileID: 540103595}
+  - 114: {fileID: 540103597}
   m_Layer: 0
   m_Name: CameraMaster
   m_TagString: Untagged
@@ -1399,6 +1400,23 @@ MonoBehaviour:
   targetDirection: {x: 0, y: 0}
   targetCharacterDirection: {x: 0, y: 0}
   characterBody: {fileID: 0}
+--- !u!114 &540103597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 540103593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8ed3f7cca0494cef8e26f843adf15cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftEyeCamera: {fileID: 1327279160}
+  rightEyeCamera: {fileID: 481770294}
+  NearClipPlane: .00999999978
+  FarClipPlane: 100
+  FieldOfView: 60
+  HorizontalOffset: .100000001
 --- !u!1 &632029762
 GameObject:
   m_ObjectHideFlags: 0
@@ -2144,7 +2162,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142.780029, y: -172.500031}
+  m_AnchoredPosition: {x: 142.780029, y: -164.000031}
   m_SizeDelta: {x: 285.579987, y: 364}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &913859687
@@ -2799,7 +2817,7 @@ GameObject:
   - 114: {fileID: 1327279162}
   - 114: {fileID: 1327279163}
   m_Layer: 0
-  m_Name: Main Camera
+  m_Name: leftEye
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

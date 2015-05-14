@@ -37,6 +37,8 @@ public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 
 		settings.DatasetChanged += ReloadData;
 		settings.TimestepChanged += ReloadData;
+
+		ReloadData ();
 	}
 
 	int nearestPowerOfTwo (int val)

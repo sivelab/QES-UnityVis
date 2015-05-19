@@ -9,7 +9,7 @@ public class SideBySideCamera : MonoBehaviour
 	public Camera rightEyeCamera;
 	public float NearClipPlane = 0.01f;
 	public float FarClipPlane = 100f;
-	[Range(0.1,179)]
+	[Range(0.1f,179)]
 	public float
 		FieldOfView = 60f;
 	[Range(0,1)]

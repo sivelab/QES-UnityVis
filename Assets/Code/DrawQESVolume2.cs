@@ -271,6 +271,7 @@ public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		mesh.uv = uvList;
 		mesh.uv2 = wList;
 		mesh.triangles = indexList;
+
 	}
 
 	private Vector3 texCoords (Vector3 localCenter, Vector3 pos)

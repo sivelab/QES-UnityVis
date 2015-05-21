@@ -1951,7 +1951,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142.780029, y: -84.5}
+  m_AnchoredPosition: {x: 142.780029, y: -66.5}
   m_SizeDelta: {x: 285.579987, y: 364}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &913859687
@@ -4145,8 +4145,8 @@ MonoBehaviour:
     type: 2}
   clipPlaneMaterial: {fileID: 2100000, guid: cce015feada4b46f5bc0fd0ca14d3907, type: 2}
   mainCamera: {fileID: 1327279160}
-  numSteps: 20
-  volumeName: ac_temperature
+  numSteps: 67
+  volumeName: ac_diffusivity_host
   doNoise: 1
 --- !u!33 &2084791894
 MeshFilter:

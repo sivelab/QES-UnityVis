@@ -4,15 +4,18 @@
 
 sampler2D _CameraDepthTexture;
 
-//sampler3D _MainTex;
-//sampler2D _RampTex;
-//sampler2D _NoiseTex;
+sampler3D _MainTex;
+sampler2D _RampTex;
+sampler2D _NoiseTex;
 //float4 _RelativeBounds;
 //float4 _CameraTexPosition;
 //float _NumSlices;
 
 float4x4 _CameraToWorld;
 float4x4 WorldToLocal;
+float4 _RelativeBounds;
+float4 _RelativeSize;
+float NumSteps;
 
 struct v2f {
 	float4 pos : SV_POSITION;
@@ -46,8 +49,23 @@ half4 frag (v2f i) : COLOR
     float4 vpos = float4(i.ray * depth,1);
     float3 wpos = mul (_CameraToWorld, vpos).xyz;
     float3 exitPoint = mul(WorldToLocal, float4(wpos, 1.0)).xyz;
-	float dist = length(entryPoint-exitPoint);
-	float4 ans = float4(dist, dist, dist, 1.0);
+    
+    float4 ans = float4(0.0, 0.0, 0.0, 0.0);
+    float weight = length(entryPoint * _RelativeSize.xyz - exitPoint * _RelativeSize.xyz);
+	weight /= NumSteps;
+	weight *= 90.0;
+	for (float interp=0.0; interp <= NumSteps; interp += 1.0) {
+		float blendAmount = (interp/NumSteps);
+		//float noiseVal = tex2D(_NoiseTex, i.screenPos * 10.0 + half2(10.6, 15.4) * i.screenPos.z).x - 0.5;
+		//blendAmount += noiseVal * 2.0 / NumSteps;
+		half3 pos = entryPoint * blendAmount + exitPoint * (1.0 - blendAmount);
+		float val = tex3D(_MainTex, pos * _RelativeBounds.xyz);
+		half4 col = tex2D(_RampTex, half2( val, val));
+		col.a *= weight;
+		col.rgb *= col.a;
+		ans = ans * (1.0 - col.a) + col;
+	}
+	ans.rgb /= ans.a;
     return ans;
     
 }

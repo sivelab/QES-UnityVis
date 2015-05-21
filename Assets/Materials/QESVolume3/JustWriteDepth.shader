@@ -2,7 +2,7 @@
 	Properties {
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" }
+		Tags { "RenderType"="Opaque" "Queue"="Geometry+1" }
 		LOD 200
 		
 		Pass {

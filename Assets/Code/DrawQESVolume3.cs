@@ -53,7 +53,10 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	
 	private Texture3D cubeTex;
 	private Texture2D noiseTex;
+	private Texture2D colorRamp;
+
 	private Vector4 relativeAmounts;
+	private Vector4 relativeSize;
 	private Material material;
 	private QESSettings settings;
 	private GameObject child;
@@ -192,6 +195,13 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		cubeTex.SetPixels (colors);
 		cubeTex.Apply ();
 		relativeAmounts = new Vector4 (width * 1.0f / texWidth, height * 1.0f / texHeight, depth * 1.0f / texDepth, 0);
+		if (width > height && width > depth) {
+			relativeSize = new Vector4(1, height * 1.0f / width, depth * 1.0f / width, 0);
+		} else if (height > width && height > depth) {
+			relativeSize = new Vector4(width * 1.0f / height, 1, depth * 1.0f / height, 0);
+		} else {
+			relativeSize = new Vector4(width * 1.0f / depth, height * 1.0f / depth, 1, 0);
+		}
 	}
 
 	private void Cleanup()
@@ -236,10 +246,37 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 
 		//cam.AddCommandBuffer (CameraEvent.AfterForwardOpaque, buf);
 	}
+
+	void SetColorRamp() {
+		if (colorRamp != null) {
+			return;
+		}
+		int colorRampWidth = 16;
+		int colorRampHeight = 256;
+		colorRamp = new Texture2D (colorRampWidth, colorRampHeight, TextureFormat.RGBA32, false);
+		colorRamp.wrapMode = TextureWrapMode.Clamp;
+		ColorRamp ramp = ColorRamp.GetColorRamp("erdc_cyan2orange");
+		Color[] colors = new Color[colorRampWidth * colorRampHeight];
+		for (int y=0; y<colorRampHeight; y++) {
+			float yVal = y * 1.0f / colorRampHeight;
+			
+			if (yVal < 0) yVal = 0;
+			if (yVal > 1) yVal = 1;
+			
+			Color col = ramp.Value (yVal);
+			col.a = Mathf.Pow (yVal, 3);
+			for (int x=0; x<colorRampWidth; x++) {
+				colors[y * colorRampWidth + x] = col;
+			}
+		}
+		colorRamp.SetPixels(colors);
+		colorRamp.Apply();
+	}
 	
 	void SetMesh ()
 	{	
 		CreateNoiseTexture ();
+		SetColorRamp();
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		if (mesh == null) {
 			mesh = new Mesh ();
@@ -390,7 +427,21 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		                               1.0f / (worldDims.y * patchDims.y),
 		                               1.0f / (worldDims.z * patchDims.z))) * transform.worldToLocalMatrix;
 		volumeRenderMaterial.SetMatrix ("WorldToLocal", m);
+		volumeRenderMaterial.SetVector("_RelativeBounds", relativeAmounts);
+		volumeRenderMaterial.SetVector("_RelativeSize", relativeSize);
+		volumeRenderMaterial.SetFloat("NumSteps", numSteps);
+		volumeRenderMaterial.SetTexture("_MainTex", cubeTex);
+		volumeRenderMaterial.SetTexture("_RampTex", colorRamp);
+		volumeRenderMaterial.SetTexture ("_NoiseTex", noiseTex);
+
 		clipPlaneMaterial.SetMatrix ("WorldToLocal", m);
+		clipPlaneMaterial.SetVector("_RelativeBounds", relativeAmounts);
+		clipPlaneMaterial.SetVector("_RelativeSize", relativeSize);
+		clipPlaneMaterial.SetFloat("NumSteps", numSteps);
+		clipPlaneMaterial.SetTexture("_MainTex", cubeTex);
+		clipPlaneMaterial.SetTexture("_RampTex", colorRamp);
+		clipPlaneMaterial.SetTexture("_NoiseTex", noiseTex);
+
 		//volumeRenderMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
 		//clipPlaneMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
 

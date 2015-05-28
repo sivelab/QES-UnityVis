@@ -43,8 +43,8 @@ half4 frag (v2f i) : COLOR
     float depth = UNITY_SAMPLE_DEPTH(tex2D (_CameraDepthTexture, uv));
     depth = Linear01Depth (depth);
     float4 vpos = float4(i.ray * depth,1);
-    float3 wpos = mul (_CameraToWorld, vpos).xyz;
-    float3 exitPoint = mul(WorldToLocal, float4(wpos, 1.0)).xyz;
+    float4 wpos = mul (_CameraToWorld, vpos);
+    float3 exitPoint = mul(WorldToLocal, float4(wpos.xyz/wpos.w, 1.0)).xyz;
     
     float4 ans = float4(0.0, 0.0, 0.0, 0.0);
     float weight = length(entryPoint * _RelativeSize.xyz - exitPoint * _RelativeSize.xyz);
@@ -62,6 +62,8 @@ half4 frag (v2f i) : COLOR
 		ans = ans * (1.0 - col.a) + col;
 	}
 	ans.rgb /= ans.a;
+	//ans.rgb = exitPoint;
+	//ans.a = 0.5;
     return ans;
     
 }

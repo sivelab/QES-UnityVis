@@ -213,6 +213,11 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 
 		cam.depthTextureMode = DepthTextureMode.Depth;
 
+		Matrix4x4 mat = cam.worldToCameraMatrix.inverse;
+
+		volumeRenderMaterial.SetMatrix ("CameraToWorld", mat);
+		clipPlaneMaterial.SetMatrix ("CameraToWorld", mat);
+
 		//SetClipPlane ();
 	}
 
@@ -348,10 +353,10 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		Vector2[] wList = new Vector2[4];
 		int[] indexList = {0, 2, 1, 0, 3, 2};
 		Vector2[] positions = {
-			new Vector2 (0, 0),
-			new Vector2 (1, 0),
-			new Vector2 (1, 1),
-			new Vector2 (0, 1)};
+			new Vector2 (-0.1f, -0.1f),
+			new Vector2 (1.1f, -0.1f),
+			new Vector2 (1.1f, 1.1f),
+			new Vector2 (-0.1f, 1.1f)};
 		for (int i=0; i<4; i++) {
 			Vector2 p = positions[i];
 			clipPoints[i] = camera.ViewportToWorldPoint(new Vector3(p.x, p.y, 5.0f));
@@ -438,9 +443,6 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		clipPlaneMaterial.SetTexture("_MainTex", cubeTex);
 		clipPlaneMaterial.SetTexture("_RampTex", colorRamp);
 		clipPlaneMaterial.SetTexture("_NoiseTex", noiseTex);
-
-		//volumeRenderMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
-		//clipPlaneMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
 
 		SetFarPlane ();
 	}

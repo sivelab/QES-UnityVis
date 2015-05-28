@@ -1168,7 +1168,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 481770287}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0, z: 0}
+  m_LocalPosition: {x: .100000001, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 540103594}
@@ -1413,10 +1413,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leftEyeCamera: {fileID: 1327279160}
   rightEyeCamera: {fileID: 481770294}
-  NearClipPlane: .00999999978
+  NearClipPlane: .300000012
   FarClipPlane: 1000
   FieldOfView: 60
-  HorizontalOffset: 0
+  HorizontalOffset: .108000003
 --- !u!1 &632029762
 GameObject:
   m_ObjectHideFlags: 0
@@ -2162,7 +2162,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142.780029, y: -131.000031}
+  m_AnchoredPosition: {x: 142.780029, y: -119.000031}
   m_SizeDelta: {x: 285.579987, y: 364}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &913859687
@@ -2883,7 +2883,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1327279156}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -.100000001, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 540103594}
@@ -3516,7 +3516,7 @@ MonoBehaviour:
     type: 2}
   clipPlaneMaterial: {fileID: 2100000, guid: cce015feada4b46f5bc0fd0ca14d3907, type: 2}
   farPlaneMaterial: {fileID: 2100000, guid: 355fcbbade7e2a342a82eed09b5b0a0e, type: 2}
-  numSteps: 50
+  numSteps: 92
   volumeName: ac_diffusivity_host
   mainCamaera: {fileID: 1327279160}
 --- !u!33 &1769146998
@@ -4267,7 +4267,7 @@ MonoBehaviour:
   changeRange: 20
   debugText: {fileID: 113157199}
   variableName: patch_temperature
-  addRandomNoise: 0
+  addRandomNoise: 1
   maxTextBox: {fileID: 1003143262}
   minTextBox: {fileID: 704190354}
   unitTextBox: {fileID: 79418482}

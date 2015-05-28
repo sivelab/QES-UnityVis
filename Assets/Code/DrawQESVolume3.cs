@@ -213,7 +213,7 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 
 		cam.depthTextureMode = DepthTextureMode.Depth;
 
-		Matrix4x4 mat = cam.worldToCameraMatrix.inverse;
+		Matrix4x4 mat = cam.cameraToWorldMatrix;
 
 		volumeRenderMaterial.SetMatrix ("CameraToWorld", mat);
 		clipPlaneMaterial.SetMatrix ("CameraToWorld", mat);

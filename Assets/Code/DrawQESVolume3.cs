@@ -34,6 +34,8 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	public Material volumeRenderMaterial;
 
 	public Material clipPlaneMaterial;
+
+	public Material farPlaneMaterial;
 	
 	[Range(10,500)]
 	public int numSteps = 20;
@@ -48,7 +50,7 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	private Material material;
 	private QESSettings settings;
 	private GameObject child;
-	private GameObject clipPlane;
+	private GameObject farPlane;
 
 	public Camera mainCamaera;
 	
@@ -62,18 +64,18 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		child.transform.SetParent (gameObject.transform, false);
 		child.GetComponent<MeshRenderer> ().material = onlyWriteDepthMaterial;
 
-		clipPlane = new GameObject ("Clip face");
-		clipPlane.AddComponent<MeshFilter> ();
-		clipPlane.AddComponent<MeshRenderer> ();
-		clipPlane.GetComponent<MeshFilter> ().mesh = new Mesh ();
-		clipPlane.transform.SetParent (gameObject.transform, false);
-		clipPlane.GetComponent<MeshRenderer> ().material = clipPlaneMaterial;
+		farPlane = new GameObject ("Far face");
+		farPlane.AddComponent<MeshFilter> ();
+		farPlane.AddComponent<MeshRenderer> ();
+		farPlane.GetComponent<MeshFilter> ().mesh = new Mesh ();
+		farPlane.transform.SetParent (gameObject.transform, false);
+		farPlane.GetComponent<MeshRenderer> ().material = farPlaneMaterial;
 
 		CreateNoiseTexture ();
 	}
 
 	void Update() {
-		SetClipPlane ();
+
 	}
 	
 	public void ReloadData() {
@@ -373,36 +375,28 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		Graphics.DrawMeshNow (mesh, Matrix4x4.identity);
 	}
 
-	private void SetClipPlane() {
-		return;
-		if (clipPlane == null)
+	private void SetFarPlane() {
+		if (farPlane == null)
 			return;
 
-		Camera camera = Camera.current;
+		Camera camera = mainCamaera;
 		Vector3[] clipPoints = new Vector3[4];
-		Vector2[] uvList = new Vector2[4];
-		Vector2[] wList = new Vector2[4];
 		int[] indexList = {0, 2, 1, 0, 3, 2};
 		Vector2[] positions = {
-			new Vector2 (0, 0),
-			new Vector2 (1, 0),
-			new Vector2 (1, 1),
-			new Vector2 (0, 1)};
+			new Vector2 (-5, -5),
+			new Vector2 (6, -5),
+			new Vector2 (6, 6),
+			new Vector2 (-5, 6)};
 		for (int i=0; i<4; i++) {
 			Vector2 p = positions[i];
-			clipPoints[i] = camera.ViewportToWorldPoint(new Vector3(p.x, p.y, 5.0f));
-			clipPoints[i] = clipPlane.transform.InverseTransformPoint(clipPoints[i]);
-			Vector3 realPos = LocalCoordsForPoint(camera.ViewportToWorldPoint(new Vector3(p.x, p.y, camera.nearClipPlane)));
-			uvList[i] = new Vector2(realPos.x, realPos.y);
-			wList[i] = new Vector2(realPos.z, 0);
+			clipPoints[i] = camera.ViewportToWorldPoint(new Vector3(p.x, p.y, 0.1f * camera.farClipPlane));
+			clipPoints[i] = farPlane.transform.InverseTransformPoint(clipPoints[i]);
 		}
 
-		if (clipPlane != null) {
-			Mesh mesh = clipPlane.GetComponent<MeshFilter> ().mesh;
+		if (farPlane != null) {
+			Mesh mesh = farPlane.GetComponent<MeshFilter> ().mesh;
 			mesh.Clear ();
 			mesh.vertices = clipPoints;
-			mesh.uv = uvList;
-			mesh.uv2 = wList;
 			mesh.triangles = indexList;
 			mesh.RecalculateBounds();
 			mesh.RecalculateNormals();
@@ -448,7 +442,7 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		//volumeRenderMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
 		//clipPlaneMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
 
-		SetClipPlane ();
+		SetFarPlane ();
 	}
 	
 	// IQESVisualization methods:

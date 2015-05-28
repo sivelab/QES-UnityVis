@@ -1414,7 +1414,7 @@ MonoBehaviour:
   leftEyeCamera: {fileID: 1327279160}
   rightEyeCamera: {fileID: 481770294}
   NearClipPlane: .00999999978
-  FarClipPlane: 100
+  FarClipPlane: 1000
   FieldOfView: 60
   HorizontalOffset: 0
 --- !u!1 &632029762
@@ -2162,7 +2162,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142.780029, y: -140.000031}
+  m_AnchoredPosition: {x: 142.780029, y: -131.000031}
   m_SizeDelta: {x: 285.579987, y: 364}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &913859687
@@ -3515,6 +3515,7 @@ MonoBehaviour:
   volumeRenderMaterial: {fileID: 2100000, guid: 3663af6bd239e4eabb53972a7d638f08,
     type: 2}
   clipPlaneMaterial: {fileID: 2100000, guid: cce015feada4b46f5bc0fd0ca14d3907, type: 2}
+  farPlaneMaterial: {fileID: 2100000, guid: 355fcbbade7e2a342a82eed09b5b0a0e, type: 2}
   numSteps: 50
   volumeName: ac_diffusivity_host
   mainCamaera: {fileID: 1327279160}

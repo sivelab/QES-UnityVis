@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Rendering;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -29,27 +28,16 @@ using System.Collections.Generic;
 
 public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 {
-	// Material to convert the depth buffer into the exit coordinates (stage 1)
-	public Material depthToExitPositionMaterial;
-
-	// Material to draw box into exit buffer, testing against depth texture (stage 3)
-	public Material boxToExitPositionMaterial;
-
 	public Material onlyWriteDepthMaterial;
 
 	// Material to draw volume rendering and output to color buffer (stage 6)
 	public Material volumeRenderMaterial;
 
 	public Material clipPlaneMaterial;
-
-	public Camera mainCamera;
+	
 	[Range(10,500)]
 	public int numSteps = 20;
 	public string volumeName = "ac_temperature";
-	
-	public bool doNoise = true;
-
-	private Dictionary<Camera,CommandBuffer> m_Cameras = new Dictionary<Camera,CommandBuffer>();
 	
 	private Texture3D cubeTex;
 	private Texture2D noiseTex;
@@ -61,6 +49,8 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	private QESSettings settings;
 	private GameObject child;
 	private GameObject clipPlane;
+
+	public Camera mainCamaera;
 	
 	// Use this for initialization
 	void Start ()
@@ -80,6 +70,10 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		clipPlane.GetComponent<MeshRenderer> ().material = clipPlaneMaterial;
 
 		CreateNoiseTexture ();
+	}
+
+	void Update() {
+		SetClipPlane ();
 	}
 	
 	public void ReloadData() {
@@ -204,24 +198,10 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		}
 	}
 
-	private void Cleanup()
-	{
-		foreach (var cam in m_Cameras)
-		{
-			if (cam.Key)
-			{
-				cam.Key.RemoveCommandBuffer (CameraEvent.AfterSkybox, cam.Value);
-			}
-		}
-		m_Cameras.Clear();
-
-	}
-
 	public void OnWillRenderObject()
 	{
 		var act = gameObject.activeInHierarchy && enabled;
 		if (!act) {
-			Cleanup ();
 			return;
 		}
 		
@@ -231,20 +211,7 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 
 		cam.depthTextureMode = DepthTextureMode.Depth;
 
-		CommandBuffer buf = null;
-		// Did we already add the command buffer on this camera? Nothing to do then.
-		if (m_Cameras.ContainsKey (cam))
-			return;
-		
-		buf = new CommandBuffer ();
-		buf.name = "Prepare for volume render";
-		m_Cameras [cam] = buf;
-		int depthTextureID = Shader.PropertyToID ("_DepthTextur");
-		buf.GetTemporaryRT (depthTextureID, -1, -1, 0, FilterMode.Point, RenderTextureFormat.Depth);
-		buf.Blit (BuiltinRenderTextureType.Depth, depthTextureID);
-		buf.SetGlobalTexture ("_DepthTexture", depthTextureID);
-
-		//cam.AddCommandBuffer (CameraEvent.AfterForwardOpaque, buf);
+		//SetClipPlane ();
 	}
 
 	void SetColorRamp() {
@@ -360,7 +327,6 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 			childMesh.vertices = vertexList;
 			childMesh.triangles = flippedIndexList;
 		}
-		SetClipPlane ();
 	}
 
 	Vector3 LocalCoordsForPoint(Vector3 worldPoint) {
@@ -373,9 +339,8 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 
 	}
 
-	private void SetClipPlane() {
-		if (clipPlane == null)
-			return;
+	void OnRenderObject() {
+		Camera camera = Camera.current;
 		Vector3[] clipPoints = new Vector3[4];
 		Vector2[] uvList = new Vector2[4];
 		Vector2[] wList = new Vector2[4];
@@ -387,9 +352,47 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 			new Vector2 (0, 1)};
 		for (int i=0; i<4; i++) {
 			Vector2 p = positions[i];
-			clipPoints[i] = mainCamera.ViewportToWorldPoint(new Vector3(p.x, p.y, 5.0f));
+			clipPoints[i] = camera.ViewportToWorldPoint(new Vector3(p.x, p.y, 5.0f));
+			//clipPoints[i] = clipPlane.transform.InverseTransformPoint(clipPoints[i]);
+			Vector3 realPos = LocalCoordsForPoint(camera.ViewportToWorldPoint(new Vector3(p.x, p.y, camera.nearClipPlane)));
+			uvList[i] = new Vector2(realPos.x, realPos.y);
+			wList[i] = new Vector2(realPos.z, 0);
+		}
+		Mesh mesh = new Mesh ();
+		mesh.Clear ();
+		mesh.vertices = clipPoints;
+		mesh.uv = uvList;
+		mesh.uv2 = wList;
+		mesh.triangles = indexList;
+		mesh.RecalculateBounds();
+		mesh.RecalculateNormals();
+		mesh.UploadMeshData(true);
+
+		clipPlaneMaterial.SetPass (0);
+
+		Graphics.DrawMeshNow (mesh, Matrix4x4.identity);
+	}
+
+	private void SetClipPlane() {
+		return;
+		if (clipPlane == null)
+			return;
+
+		Camera camera = Camera.current;
+		Vector3[] clipPoints = new Vector3[4];
+		Vector2[] uvList = new Vector2[4];
+		Vector2[] wList = new Vector2[4];
+		int[] indexList = {0, 2, 1, 0, 3, 2};
+		Vector2[] positions = {
+			new Vector2 (0, 0),
+			new Vector2 (1, 0),
+			new Vector2 (1, 1),
+			new Vector2 (0, 1)};
+		for (int i=0; i<4; i++) {
+			Vector2 p = positions[i];
+			clipPoints[i] = camera.ViewportToWorldPoint(new Vector3(p.x, p.y, 5.0f));
 			clipPoints[i] = clipPlane.transform.InverseTransformPoint(clipPoints[i]);
-			Vector3 realPos = LocalCoordsForPoint(mainCamera.ViewportToWorldPoint(new Vector3(p.x, p.y, mainCamera.nearClipPlane)));
+			Vector3 realPos = LocalCoordsForPoint(camera.ViewportToWorldPoint(new Vector3(p.x, p.y, camera.nearClipPlane)));
 			uvList[i] = new Vector2(realPos.x, realPos.y);
 			wList[i] = new Vector2(realPos.z, 0);
 		}
@@ -404,7 +407,7 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 			mesh.RecalculateBounds();
 			mesh.RecalculateNormals();
 			mesh.UploadMeshData(false);
-
+			mesh.RecalculateBounds();
 		}
 	}
 	
@@ -417,7 +420,7 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	}
 	
 	// Update is called once per frame
-	void Update ()
+	void LateUpdate ()
 	{
 		SetMesh ();
 		GetComponent<MeshRenderer> ().material = volumeRenderMaterial;
@@ -445,7 +448,7 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		//volumeRenderMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
 		//clipPlaneMaterial.SetMatrix ("_CameraToWorld", m * mainCamera.cameraToWorldMatrix);
 
-		
+		SetClipPlane ();
 	}
 	
 	// IQESVisualization methods:

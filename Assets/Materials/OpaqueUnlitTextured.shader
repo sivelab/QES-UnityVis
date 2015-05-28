@@ -3,14 +3,13 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" }
+		Tags { "RenderType"="Opaque" "Queue"="Geometry-3" }
 		LOD 200
 		
 		Pass {
 		
 		CGPROGRAM
 #include "UnityCG.cginc"
-#pragma exclude_renderers d3d11 xbox360
 		#pragma vertex vert
 		#pragma fragment frag
 

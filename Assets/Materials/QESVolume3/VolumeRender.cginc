@@ -1,8 +1,4 @@
-﻿// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members screenPos)
-// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members ray)
-#pragma exclude_renderers d3d11 xbox360
-
-sampler2D _CameraDepthTexture;
+﻿sampler2D _CameraDepthTexture;
 
 sampler3D _MainTex;
 sampler2D _RampTex;
@@ -21,7 +17,7 @@ struct v2f {
 	float4 pos : SV_POSITION;
 	float3 uvw : TEXCOORD0;
 	float4 screenPos : TEXCOORD1;
-	float3 ray;
+	float3 ray: TEXCOORD2;
 };
 
 v2f vert (appdata_full v)

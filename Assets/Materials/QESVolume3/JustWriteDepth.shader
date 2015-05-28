@@ -2,7 +2,7 @@
 	Properties {
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue"="Geometry+1" }
+		Tags { "RenderType"="Opaque" "Queue"="Geometry+10" }
 		LOD 200
 		
 		Pass {
@@ -31,12 +31,12 @@
 
 	    half4 frag (v2f i) : COLOR
 	    {
-	    	
 	        return half4(1.0, 1.0, 0.0, 0.0);
 	        
 	    }
 		ENDCG
 		ColorMask 0
+		ZWrite Off
 		}
 	}
 	FallBack "Diffuse"

@@ -21,7 +21,6 @@
     	}
 		
 		CGPROGRAM
-		#pragma exclude_renderers d3d11 xbox360
 		#include "UnityCG.cginc"
 		#pragma vertex vert
 		#pragma fragment frag

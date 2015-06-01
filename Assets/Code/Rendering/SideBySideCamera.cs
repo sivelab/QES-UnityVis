@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Utility script to set two cameras for side-by-side stereo.
+/// 
+/// This handles off-axis projection
+/// </summary>
 [ExecuteInEditMode]
 public class SideBySideCamera : MonoBehaviour
 {

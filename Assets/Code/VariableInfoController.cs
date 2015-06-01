@@ -3,12 +3,33 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Class that controls the interface for choosing which visualizations show which variables
+/// </summary>
 public class VariableInfoController : MonoBehaviour, IQESSettingsUser {
-
+	/// <summary>
+	/// Checklist for selecting the visualization to choose the variable for
+	/// </summary>
 	public CheckListController VisualizationCheckList;
+
+	/// <summary>
+	/// Checklist for selecting the variable to be set for the selected visualization
+	/// </summary>
 	public CheckListController VariableCheckList;
+
+	/// <summary>
+	/// Button to close this interface
+	/// </summary>
 	public Button CloseButton;
+
+	/// <summary>
+	/// GameObject that contains all of the GameObjects that we want to adjust the visualizations of
+	/// </summary>
 	public GameObject Visualization;
+
+	/// <summary>
+	/// Canvas containing this interface
+	/// </summary>
 	public Canvas VariableInfoCanvas;
 
 	// Use this for initialization
@@ -26,6 +47,10 @@ public class VariableInfoController : MonoBehaviour, IQESSettingsUser {
 		VariableInfoCanvas.enabled = false;
 	}
 
+	/// <summary>
+	/// Update our list of visualizations based on the GameObjects with MonoBehaviours
+	/// implementing IQESVisualization
+	/// </summary>
 	public void UpdateVisualizations() {
 		visualizations = Visualization.GetComponentsInChildren<IQESVisualization> ();
 		string[] names = new string[visualizations.Length];
@@ -37,6 +62,9 @@ public class VariableInfoController : MonoBehaviour, IQESSettingsUser {
 		VisualizationCheckList.SetEntries (names, 0);
 	}
 
+	/// <summary>
+	/// Update the list of avaialbe variables for the type supported by the current visualization
+	/// </summary>
 	public void UpdateVariables() {
 		if (qesSettings == null) {
 			return;

@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Struct to represent a face of a QESBuilding.
+/// </summary>
 public class QESFace
 {
 	public QESFace (Vector3 anchor, Vector3 v1, Vector3 v2, int w, int h, int patchIndex)

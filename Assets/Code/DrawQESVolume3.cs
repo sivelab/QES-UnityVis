@@ -5,56 +5,136 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
-// 1. Compute exit coordinates based on depth texture
-//    Geometry: Blit
-//    Input: Depth texture
-//    Output: Exit coordinate texture
-//
-// 3. Render volume box into exit texture, testing against depth texture
-//    Geometry: Volume Box
-//    Input: Depth texture
-//    Output: Exit coordinate texture
-//
-// 4. Render volume box into output buffer, using stencil to detect inside of box
-//    Geometry: Volume Box
-//    Input: Exit coordinate texture, 3D volume
-//    Output: Screen
-//
-// 5. Fill in screen-space hole in enter coordinates, using computed stencil
-//    Geometry: Full-screen quad
-//    Input: None
-//    Output: Enter coordinate texture
-//
-
+/// <summary>
+/// Renders volumetric QES variables.
+/// </summary>
+/// This class is an evolution from DrawQESVolume and DrawQESVolume2, and 
+/// performs integration through space to compute the values for each fragment.
+/// Each fragment is only traced if it is visible, and the tracing is only
+/// performed on the section of the volume that is visible.
+/// 
+/// In order to perform this rendering, several steps are performed.  All of
+/// the rendering falls under Unity's 'Forward' rendering path, and can be done
+/// to an LDR render target without a loss of quality.
+/// 
+/// 1. Compute a depth texture for each camera.  this is done by setting a property
+///    on each camera specifying that we are interested in getting access to the
+///    computed depth value.
+/// 2. In this depth texture, render the far faces of the volume with
+///    onlyWriteDepthMaterial.  Since the shader we wrote doesn't know how to do
+///    this, the fallback clause causes the built-in Diffuse shader's depth write
+///    fallback to be used.
+/// 3. Once we have a texture that contains the depth values, clear the rendered-to
+///    depth buffer to a far value.  This is necessary since on DirectX, Unity will
+///    use the rendered depth buffer as an early-Z buffer to ensure that only visible
+///    fragments have shading computed for them.  Since we have some geometry that
+///    shows up in the depth buffer but not the color buffer (the volume far faces),
+///    this can cause geometry to be improperly invisible.  In order to clear the
+///    depth buffer, we need to render a plane far away from the camera, force
+///    the z test to always pass, and force it to write the z value into the buffer.
+///    This is done with the farPlaneMaterial.
+/// 4. Begin rendering opaque geometry in the entire scene.  Technically, step 3 is
+///    a very early step in this phase since it is impossible to force it to appear
+///    at a different stage.  After the clear, standard opaque geometry is rendered
+///    as normal in a Unity scene.
+/// 5. After opaque geometry, but before transparent geometry, the far faces of the
+///    volume are rendered (again with onlyWriteDepthMaterial).  Since we are not in
+///    a depth rendering pass, we use the shader we wrote.  This sets the stencil
+///    to '1' on every fragment that the far faces are rasterized to, but due to the
+///    value set for the color write mask, the color buffer is unchanged.
+/// 6. We move on to the transparent pass, where the front faces of the volume are
+///    rendered with volumeRenderMaterial.  The object this material is placed on
+///    has the volume-space coordinates specified as attributes, and so the
+///    interpolater will compute for each fragment the position of that fragment in
+///    volume space.  We will use this to compute a ray from the camera origin,
+///    through this volume entry point, and to wherever this ray exits the volume.
+///    We use the depth buffer to find the depth of either the solid geometry in the
+///    scene in the direction of this ray, or of the far faces of the volume.  We
+///    convert this to volume space coordinates, and can perform our trace.  This
+///    shader also sets the stencil values of every fragment it is run on to zero.
+/// 7. We now have a stencil buffer set to zero everywhere except for where volume
+///    backfaces were drawn, but front faces were not.  This corresponds to fragments
+///    where the near clipping plane removed the front faces of the volume because we
+///    are inside of the volume.  To solve this, we draw a quad covering the screen,
+///    set to render only where the stencil value is 1.
+/// 
+/// At the end of this process, we have traced the volume.  Note that this will
+/// NOT work for overlapping volumes, or on systems such as iOS, Android, and
+/// WebGL (I think) where 3D textures don't exist.
 public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 {
+	/// <summary>
+	/// Material to only output depth values and to set the stencil value to 1
+	/// </summary>
 	public Material onlyWriteDepthMaterial;
 
-	// Material to draw volume rendering and output to color buffer (stage 6)
+	/// <summary>
+	/// Material to draw volume rendering and output to color buffer (step 6)
+	/// </summary>
 	public Material volumeRenderMaterial;
 
+	/// <summary>
+	/// Material to draw volume rendering on the clip plane (step 7)
+	/// </summary>
 	public Material clipPlaneMaterial;
 
+	/// <summary>
+	/// Material to reset the depth value to a far away value (step 3)
+	/// </summary>
 	public Material farPlaneMaterial;
-	
+
+	/// <summary>
+	/// How many steps to trace between the entry and exit point
+	/// </summary>
 	[Range(10,500)]
 	public int numSteps = 20;
+
+	/// <summary>
+	/// Which variable to perform volume rendering on
+	/// </summary>
 	public string volumeName = "ac_temperature";
-	
+
+	/// <summary>
+	/// 3D texture representing the data.  Since Unity (at least 4.x) requires
+	/// power-of-two 3D textures, this is a large texture.
+	/// </summary>
 	private Texture3D cubeTex;
+
+	/// <summary>
+	/// Noise texture (currently unused) to hide aliasing artifacts
+	/// </summary>
 	private Texture2D noiseTex;
+
+	/// <summary>
+	/// Transfer function (1D) to convert scalar values to color+alpha
+	/// </summary>
 	private Texture2D colorRamp;
 
+	// How much of each dimension is used in the 3D texture 
 	private Vector4 relativeAmounts;
+
+	// Relative size of the three axes (in world-space).  The longest
+	// axis has length '1', and shorter axes have a correspondingly
+	// smaller value
 	private Vector4 relativeSize;
 	private Material material;
 	private QESSettings settings;
+
+	/// <summary>
+	/// GameObject representing the far faces of the volume
+	/// </summary>
 	private GameObject child;
+
+	/// <summary>
+	/// GameObject representing the far clipping plane, used for step 3.
+	/// </summary>
 	private GameObject farPlane;
 
 	public Camera mainCamaera;
 	
-	// Use this for initialization
+	/// <summary>
+	/// Create two GameObjects: the volume far faces and the far clipping plane object.
+	/// </summary>
 	void Start ()
 	{	
 		child = new GameObject ("Back face");
@@ -77,13 +157,20 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	void Update() {
 
 	}
-	
+
+	/// <summary>
+	/// Reload data from QESSettings' QESReader
+	/// </summary>
 	public void ReloadData() {
 		material = null;
 		CreateTexture ();
 		SetMesh ();
 	}
-	
+
+	/// <summary>
+	/// Update the QESSettings being used
+	/// </summary>
+	/// <param name="set">Set.</param>
 	public void SetSettings(QESSettings set) {
 		if (settings != null) {
 			settings.DatasetChanged -= ReloadData;
@@ -96,7 +183,17 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		
 		ReloadData ();
 	}
-	
+
+	/// <summary>
+	/// Compute the next larger power of two over the passed-in value.
+	/// </summary>
+	/// Unity (at least 4.x) requires that 3D textures are power-of-two. In
+	/// general, our volume data is not necessarily of this dimension. 
+	/// Instead of scaling our data, we add blank samples and only use a subset
+	/// of the 3D texture space
+	/// 
+	/// <returns>The next-largest power of two</returns>
+	/// <param name="val">Value</param>
 	int nearestPowerOfTwo (int val)
 	{
 		if (val > 2048) {
@@ -123,7 +220,10 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 			return 4;
 		}
 	}
-	
+
+	/// <summary>
+	/// Creates a noise texture
+	/// </summary>
 	void CreateNoiseTexture() {
 		int noiseDim = 256;
 		if (noiseTex == null) {
@@ -139,7 +239,10 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		noiseTex.filterMode = FilterMode.Bilinear;
 		noiseTex.Apply ();
 	}
-	
+
+	/// <summary>
+	/// Creates the 3D texture used for volume rendering
+	/// </summary>
 	void CreateTexture ()
 	{
 		float[] volData = settings.Reader.GetPatchData (volumeName, settings.CurrentTimestep);
@@ -200,8 +303,14 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		}
 	}
 
+	/// <summary>
+	/// When about to be rendered, set the (currently unused) "CameraToWorld"
+	/// matrix on each object based on the camera.
+	/// </summary>
 	public void OnWillRenderObject()
 	{
+		// TODO: Aside from requesting the depth texture, I don't think anything
+		// in this function is needed.
 		var act = gameObject.activeInHierarchy && enabled;
 		if (!act) {
 			return;
@@ -221,6 +330,9 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		//SetClipPlane ();
 	}
 
+	/// <summary>
+	/// Calculate the current color ramp texture
+	/// </summary>
 	void SetColorRamp() {
 		if (colorRamp != null) {
 			return;
@@ -246,7 +358,11 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		colorRamp.SetPixels(colors);
 		colorRamp.Apply();
 	}
-	
+
+	/// <summary>
+	/// Update the 3D mesh representing the front faces of the volume, as
+	/// well as the child object representing the back faces of the volume.
+	/// </summary>
 	void SetMesh ()
 	{	
 		CreateNoiseTexture ();
@@ -264,6 +380,8 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		worldDims.y *= patchDims.y;
 		worldDims.z *= patchDims.z;
 
+		// For these, note that Unity uses a left-handed coordinate
+		// system with clockwise winding for front faces.
 		Vector3[] vertexList = {
 			new Vector3 (0, 0, 0),
 			new Vector3 (0, 0, worldDims.z),
@@ -305,6 +423,11 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 			4, 5, 1,
 			4, 1, 0};
 
+		// Instead of using a shader that switches the culling mode,
+		// we need to use the same winding, since the actual depth rendering
+		// of the back faces is performed by a fallback shader that we
+		// import indirectly from the "Diffuse" shader, meaning we can't
+		// control the culling mode used for that shader.
 		int[] flippedIndexList = { 
 			2,0,6,
 			6,0,4,
@@ -346,12 +469,19 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 
 	}
 
+	/// <summary>
+	/// Called immediately after a camera has rendered this object.  We use this
+	/// time to force the rendering of the near-plane for this specific camera.
+	/// </summary>
 	void OnRenderObject() {
 		Camera camera = Camera.current;
 		Vector3[] clipPoints = new Vector3[4];
 		Vector2[] uvList = new Vector2[4];
 		Vector2[] wList = new Vector2[4];
 		int[] indexList = {0, 2, 1, 0, 3, 2};
+		// Exactly speaking, we want 0 and 1, but due to floating point error,
+		// that would sometimes cause the rightmost column of pixels to not get
+		// properly rendered.
 		Vector2[] positions = {
 			new Vector2 (-0.1f, -0.1f),
 			new Vector2 (1.1f, -0.1f),
@@ -380,6 +510,9 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		Graphics.DrawMeshNow (mesh, Matrix4x4.identity);
 	}
 
+	/// <summary>
+	/// Update the far plane GameObject
+	/// </summary>
 	private void SetFarPlane() {
 		if (farPlane == null)
 			return;
@@ -418,7 +551,11 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		return ans;
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Updates various shader properties.  If have this in 'Update' instead
+	/// of 'LateUpdate', user input can cause these quantities to be one frame
+	/// out of date.
+	/// </summary>
 	void LateUpdate ()
 	{
 		SetMesh ();

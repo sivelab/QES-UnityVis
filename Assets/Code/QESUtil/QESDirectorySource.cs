@@ -1,4 +1,8 @@
-﻿public class QESDirectorySource : IQESDataSource
+﻿/// <summary>
+/// QESDataSource that sources data from a filesystem location
+/// </summary>
+
+public class QESDirectorySource : IQESDataSource
 {
 
 	public QESDirectorySource (string dir)

@@ -2,6 +2,10 @@
 using System.Xml;
 using UnityEngine;
 
+/// <summary>
+/// Class that reads structure.xml from a QESDataSource and uses it to provide access to
+/// scene geometry, aircell and patch data, and the variables that are defined.
+/// </summary>
 public class QESReader
 {
 	/// <summary>
@@ -46,8 +50,6 @@ public class QESReader
 		//
 		// Read in the buildings and sensors
 		//
-		
-		// buildings = new QESBuilding[outerElement.ChildNodes.Count];
 
 		int buildingIndex = 0;
 		int sensorIndex = 0;

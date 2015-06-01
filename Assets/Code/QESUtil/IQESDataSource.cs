@@ -1,4 +1,8 @@
-﻿
+﻿/// <summary>
+/// Interface to abstract away the different methods of accessing a file.
+/// 
+/// Different methods must provide a list of files, and a way to access a file as either text or binary.
+/// </summary>
 public interface IQESDataSource
 {
 	/// <summary>

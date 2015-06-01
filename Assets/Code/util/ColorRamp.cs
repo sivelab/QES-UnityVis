@@ -2,12 +2,25 @@
 using UnityEngine;
 using System.Xml;
 
+
+/// <summary>
+/// Class to access color ramps defined in the asset "ColorMaps".  This file
+/// is in paraview XML format.
+/// 
+/// You should never need to instantiate this class directly, instead getting access
+/// to instances from GetColorRamp()
+/// </summary>
 public class ColorRamp
 {
 	ColorRamp() {
 		colors = new List<Color> ();
 		positions = new List<float> ();
 	}
+
+	/// <summary>
+	/// Gets color ramp names.
+	/// </summary>
+	/// <returns>Names of available color ramps</returns>
 	public static string[] GetColorRampNames ()
 	{
 		LoadIfNeeded ();
@@ -16,12 +29,20 @@ public class ColorRamp
 		return ans;
 	}
 
+	/// <summary>
+	/// Gets the color ramp with the specified name
+	/// </summary>
+	/// <returns>A (shared) instance of ColorRamp</returns>
+	/// <param name="name">Name of color ramp to return</param>
 	public static ColorRamp GetColorRamp (string name)
 	{
 		LoadIfNeeded ();
 		return colorRamps [name];
 	}
 
+	/// <summary>
+	/// Called to load data from the ColorMaps Asset.
+	/// </summary>
 	private static void LoadIfNeeded ()
 	{
 		if (loaded) {
@@ -70,6 +91,12 @@ public class ColorRamp
 		loaded = true;
 	}
 
+	/// <summary>
+	/// Returns the Color at the specified position in the color ramp.
+	/// Ramps are scaled to lie in the range 0..1, and values outside this range are 
+	/// either the first or last control point's color, respectively.
+	/// </summary>
+	/// <param name="pos">Position.</param>
 	public Color Value (float pos)
 	{
 		if (pos < 0) {
@@ -90,7 +117,10 @@ public class ColorRamp
 		return colors [colors.Count - 1];
 	}
 
-	// return the color ramp resampled to a given number of samples
+	/// <summary>
+	/// Returns a resampled color ramp with the specified number of samples
+	/// </summary>
+	/// <param name="numSamples">Number of samples.</param>
 	public Color[] Ramp(int numSamples) 
 	{
 		Color[] result = new Color[numSamples];

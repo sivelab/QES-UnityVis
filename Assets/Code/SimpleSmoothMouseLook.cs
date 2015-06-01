@@ -2,7 +2,9 @@
 
 // Very simple smooth mouselook modifier for the MainCamera in Unity
 // by Francis R. Griffiths-Keam - www.runningdimensions.com
-
+/// <summary>
+/// Script from the internet that allows the mouse to be used to change the view direction of a GameObject
+/// </summary>
 [AddComponentMenu("Camera/Simple Smooth Mouse Look ")]
 public class SimpleSmoothMouseLook : MonoBehaviour
 {

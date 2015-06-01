@@ -1,4 +1,10 @@
-﻿Shader "Custom/OpaqueUnlitTextured" {
+﻿// Opaque, unlit, textured shader.
+// For simple rendering, this is identical to the built-in unlit shader
+//
+// Unlike the unlit shader, this has a fallback to "Diffuse" so that when
+// we render into a depth texture, this geometry shows up.
+
+Shader "Custom/OpaqueUnlitTextured" {
 	Properties {
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 	}

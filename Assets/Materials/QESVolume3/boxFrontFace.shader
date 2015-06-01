@@ -1,16 +1,20 @@
-﻿Shader "Custom/boxFrontFace" {
+﻿// This shader is used for the QESv3 volume rendering code.  This shader
+// uses VolumeRender.cginc to provide the volume rendering on the front
+// surface of the rendered volume.
+//
+// See the full description in DrawQESVolume3.cs for how the pieces fit together.
+
+
+Shader "Custom/boxFrontFace" {
 	Properties {
-		//_MainTex ("Volume (RGB)", 3D) = "white" {}
-		//_RampTex ("Ramp Texture (RGBA)", 2D) = "white" {}
-		//_NoiseTex ("Noise Texture (RGBA)", 2D) = "white" {}
-		//_RelativeBounds ("Relative Bounds", Vector) = (0.5, 0.5, 0.5, 0.0)
-		//_CameraTexPosition ("Camera Texture Coordinates", Vector) = (0,0,0,0)
-		//_NumSlices ("Number of slices", Float) = 100
 	}
 	SubShader {
 		Tags { "RenderType"="Transparent" "Queue" = "Transparent" }
 		LOD 200
-		ZWrite Off
+		
+		// Zero the values in the stencil buffer wherever this polygon
+		// is rasterized.  This will be used to add the clip plane using
+		// boxClipPlane.shader
 		Pass {
 		Stencil {
     		Ref 1

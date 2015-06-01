@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+/// <summary>
+/// Interface to be implemented by all visualization MonoBehaviours that wish
+/// to have their variables changed at runtime.  This is used by
+/// VariableInfoController to get a list of these visualizations.
+/// </summary>
 public interface IQESVisualization {
 
 	/// <summary>

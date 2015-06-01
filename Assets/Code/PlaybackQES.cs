@@ -2,18 +2,31 @@
 using UnityEngine.UI;
 using System.Collections;
 
+/// <summary>
+/// Controller for the playback interface, responsible for updating UI and
+/// advancing time as necessary/
+/// </summary>
 public class PlaybackQES : MonoBehaviour, IQESSettingsUser {
-
+	/// <summary>
+	/// Slider used to seek through time and show the current playback position
+	/// </summary>
 	public Slider Seekbar;
-	public Button PlayPause;
 
-	// Use this for initialization
+	/// <summary>
+	/// Button to toggle playing and pausing
+	/// </summary>
+	public Button PlayPause;
+	
 	void Start () {
 		Seekbar.onValueChanged.AddListener (SetTimestep);
 		PlayPause.onClick.AddListener (TogglePlayPause);
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Every time, if we are playing, accumulate time since we previously
+	/// advanced frame.  If this is greater than the set threshold for this
+	/// to happen, update QESSettings to be that many frames advanced.
+	/// </summary>
 	void Update () {
 		if (playing) {
 			timeAccum += Time.deltaTime;
@@ -33,6 +46,10 @@ public class PlaybackQES : MonoBehaviour, IQESSettingsUser {
 		}
 	}
 
+	/// <summary>
+	/// Callback from Slider to set the current time.
+	/// </summary>
+	/// <param name="val">Currently selected time</param>
 	public void SetTimestep (float val) {
 		int seekbarTime = (int)Seekbar.value;
 		if (seekbarTime != qesSettings.CurrentTimestep) {
@@ -52,6 +69,9 @@ public class PlaybackQES : MonoBehaviour, IQESSettingsUser {
 		playing = false;
 	}
 
+	/// <summary>
+	/// Update the UI to reflect the current internal state
+	/// </summary>
 	public void UpdateUI() {
 		if (qesSettings == null || qesSettings.Reader == null) {
 			return;

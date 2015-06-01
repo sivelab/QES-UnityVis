@@ -2,6 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Initial attempt at drawing a volume of data.  Use DrawQESVolume3 instead.
+/// </summary>
+/// This renders the volume as a stack of planes that each are aligned with one
+/// set of samples in the dataset.
 public class DrawQESVolume : MonoBehaviour
 {
 	public Material transparentMaterial;

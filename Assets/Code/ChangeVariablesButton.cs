@@ -2,6 +2,9 @@
 using UnityEngine.UI;
 using System.Collections;
 
+/// <summary>
+/// Behaviour class to allow a Button to cause the change variable Canvas to become visible.
+/// </summary>
 public class ChangeVariablesButton : MonoBehaviour {
 
 	public Button button;

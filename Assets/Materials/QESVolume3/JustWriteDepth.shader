@@ -1,4 +1,8 @@
-﻿Shader "Custom/JustWriteDepth" {
+﻿// Shader used to store depth information for the backfaces of
+// the volume.  This also sets the stencil buffer to 1 at any
+// place where fragments are generated.
+
+Shader "Custom/JustWriteDepth" {
 	Properties {
 	}
 	SubShader {

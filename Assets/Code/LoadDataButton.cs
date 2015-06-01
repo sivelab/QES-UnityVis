@@ -2,6 +2,10 @@
 using UnityEngine.UI;
 using System.Collections;
 
+/// <summary>
+/// Class for the global-level "Load Data" button that toggles the interactive
+/// status of the visualization as a whole.
+/// </summary>
 public class LoadDataButton : MonoBehaviour, IQESSettingsUser {
 
 	public Button button;

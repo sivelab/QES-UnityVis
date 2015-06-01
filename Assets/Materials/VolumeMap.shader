@@ -1,4 +1,5 @@
-﻿Shader "Custom/VolumeMap" {
+﻿// Shader used by DrawQESVolume2.  Use DrawQESVolume3 instead.
+Shader "Custom/VolumeMap" {
 	Properties {
 		_MainTex ("Volume (RGB)", 3D) = "white" {}
 		_RampTex ("Ramp Texture (RGBA)", 2D) = "white" {}

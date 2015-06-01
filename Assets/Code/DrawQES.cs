@@ -6,20 +6,66 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
+/// <summary>
+/// Class that renders patch QES data as geometry with a color ramp applied
+/// </summary>
 public class DrawQES : MonoBehaviour, IQESSettingsUser, IQESVisualization
 {
+	/// <summary>
+	/// Material used for solid objects.  Note that this material MUST successfully
+	/// render to the depth buffer in order for these objects to correctly interact
+	/// with DrawQESVolume3.  One shader that does that is the OpaqueUnlitTextured
+	/// shader included in this project.
+	/// </summary>
 	public Material baseMaterial;
+
+	// TODO: unused?
 	public Material transparentMaterial;
+
+	/// <summary>
+	/// Should the visualization show the instantaneous value, or the change from timestep to timestep?
+	/// </summary>
 	public bool showChange = false;
+
+	/// <summary>
+	/// Range of values to be shown when showing changes
+	/// </summary>
 	public float changeRange = 20;
+
+	/// <summary>
+	/// GUIText used to display the current time and variable being shown
+	/// </summary>
 	public GUIText debugText;
+
+	/// <summary>
+	/// Name of the variable to display
+	/// </summary>
 	public string variableName = "patch_nir";
+
+	/// <summary>
+	/// Should random noise be added to the values being visualized?  This can help in seeing the
+	/// structure of datasets where large regions are at a single value
+	/// </summary>
 	public bool addRandomNoise = false;
 
+	/// <summary>
+	/// Text box used to display the numeric value of the maximum of the current variable
+	/// </summary>
 	public Text maxTextBox;
+
+	/// <summary>
+	/// Text box used to display the numeric value of the minimum of the current variable
+	/// </summary>
 	public Text minTextBox;
+
+	/// <summary>
+	/// Text box used to display the units for the current variable
+	/// </summary>
 	public Text unitTextBox;
 
+	/// <summary>
+	/// Image that shows the current color ramp
+	/// </summary>
 	public Image legend;
 	
 	void ReloadMesh() {
@@ -35,7 +81,12 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	{
 		// Do nothing since we might not have QESSettings yet
 	}
-	
+
+	/// <summary>
+	/// Reload the mesh geometry from QESSettings' QESReader instance
+	/// </summary>
+	/// Separate meshes are created for each face (since each face has its own texture)
+	/// and each of these meshes is added as a submesh
 	void SetMesh ()
 	{
 		if (qesSettings == null || qesSettings.Reader == null) {
@@ -162,7 +213,10 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		
 		SetMaterials ();
 	}
-	
+
+	/// <summary>
+	/// Sets materials for the faces in the scene
+	/// </summary>
 	void SetMaterials ()
 	{
 		QESTimestamp ts = qesSettings.Reader.getTimestamps () [qesSettings.CurrentTimestep];
@@ -266,7 +320,9 @@ public class DrawQES : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		Resources.UnloadUnusedAssets ();
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Provide simple keyboard controls to change variables
+	/// </summary>
 	void Update ()
 	{
 		if (qesSettings == null) {

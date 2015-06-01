@@ -5,6 +5,14 @@ using System.Collections.Generic;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(MeshRenderer))]
 
+/// <summary>
+/// Second attempt at drawing volume data.  Use DrawQESVolume3 instead.
+/// </summary>
+/// This relies on using the alpha blending hardware to perform the volume rendering.
+/// 
+/// Each frame, a large number of view-aligned quads are positioned equally spaced through the volume.
+/// This wastes a lot of time on regions that either can't be seen or don't represent data.  Additionally,
+/// this uses an incredible amount of fill rate for an ultimately poor-quality visualization
 public class DrawQESVolume2 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 {
 	public Material transparentMaterial;

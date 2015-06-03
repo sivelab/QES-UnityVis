@@ -1951,7 +1951,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142.780029, y: -60.5}
+  m_AnchoredPosition: {x: 142.780029, y: -52.5}
   m_SizeDelta: {x: 285.579987, y: 364}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &913859687
@@ -4030,7 +4030,7 @@ Transform:
   m_GameObject: {fileID: 2044856915}
   m_LocalRotation: {x: -.707106829, y: 0, z: 0, w: .707106709}
   m_LocalPosition: {x: -1.83601046, y: 3.47210121, z: 1.4091984}
-  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_LocalScale: {x: .0500000007, y: .0500000007, z: .0500000007}
   m_Children:
   - {fileID: 2084791896}
   m_Father: {fileID: 392516693}
@@ -4071,7 +4071,7 @@ MonoBehaviour:
   clipPlaneMaterial: {fileID: 2100000, guid: cce015feada4b46f5bc0fd0ca14d3907, type: 2}
   farPlaneMaterial: {fileID: 2100000, guid: 355fcbbade7e2a342a82eed09b5b0a0e, type: 2}
   numSteps: 57
-  volumeName: ac_diffusivity_host
+  volumeName: ac_temperature
   mainCamaera: {fileID: 1327279160}
 --- !u!33 &2084791894
 MeshFilter:

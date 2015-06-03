@@ -99,7 +99,7 @@ half4 frag (v2f i) : COLOR
 	
 	// Fixed factor to cause the volume to be sufficiently but not too opaque.
 	// TODO: make this tuneable
-	weight *= 90.0;
+	weight *= 1.0;
 	
 	// Step through the volume, accumulating color into the 'ans' variable.
 	// Tracing is performed from exit point to entry point so that alpha equation
@@ -109,15 +109,19 @@ half4 frag (v2f i) : COLOR
 		float blendAmount = (interp/NumSteps);
 		//float noiseVal = tex2D(_NoiseTex, i.screenPos * 10.0 + half2(10.6, 15.4) * i.screenPos.z).x - 0.5;
 		//blendAmount += noiseVal * 2.0 / NumSteps;
-		half3 pos = entryPoint * blendAmount + exitPoint * (1.0 - blendAmount);
+		float3 pos = entryPoint * blendAmount + exitPoint * (1.0 - blendAmount);
 		float val = tex3D(_MainTex, pos * _RelativeBounds.xyz);
-		half4 col = tex2D(_RampTex, half2( val, val));
+		//float val = (pos.x + pos.y + pos.z)/3.0;
+		float4 col = tex2D(_RampTex, half2( val, val));
 		col.a *= weight;
+		col.a = clamp(weight, 0.0, 1.0);
 		col.rgb *= col.a;
 		ans = ans * (1.0 - col.a) + col;
 	}
 	// Convert from premultiplied to unmultiplied alpha.
 	ans.rgb /= ans.a;
+	//ans.rgb = exitPoint;
+	//ans.a = 1.0;
 	return ans;
     
 }

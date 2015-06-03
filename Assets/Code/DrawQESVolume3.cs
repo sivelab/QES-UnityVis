@@ -95,6 +95,16 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	public string volumeName = "ac_temperature";
 
 	/// <summary>
+	/// Should the visualization show the difference between timesteps?
+	/// </summary>
+	public bool showDifference = false;
+
+	/// <summary>
+	/// Range of differences to show
+	/// </summary>
+	public float differenceRange = 10;
+
+	/// <summary>
 	/// 3D texture representing the data.  Since Unity (at least 4.x) requires
 	/// power-of-two 3D textures, this is a large texture.
 	/// </summary>
@@ -246,6 +256,12 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	void CreateTexture ()
 	{
 		float[] volData = settings.Reader.GetPatchData (volumeName, settings.CurrentTimestep);
+		if (showDifference) {
+			float[] volDiff = settings.Reader.GetPatchData (volumeName, settings.CurrentTimestep + 1);
+			for (int i=0; i<volData.Length; i++) {
+				volData[i] = volDiff[i] - volData[i];
+			}
+		}
 		Vector3 patchDims = settings.Reader.PatchDims;
 		
 		QESVariable var = null;
@@ -258,7 +274,12 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		
 		float maxVal = var.Max;
 		float minVal = var.Min;
-		
+
+		if (showDifference) {
+			minVal = -differenceRange;
+			maxVal = differenceRange;
+		}
+
 		Vector3 worldDims = settings.Reader.WorldDims;
 		int width = (int)worldDims.x;
 		int height = (int)worldDims.y;
@@ -341,7 +362,13 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		int colorRampHeight = 256;
 		colorRamp = new Texture2D (colorRampWidth, colorRampHeight, TextureFormat.RGBA32, false);
 		colorRamp.wrapMode = TextureWrapMode.Clamp;
-		ColorRamp ramp = ColorRamp.GetColorRamp("erdc_cyan2orange");
+		ColorRamp ramp;
+
+		if (showDifference) {
+			ramp = ColorRamp.GetColorRamp("erdc_divLow_icePeach");
+		} else {
+			ramp = ColorRamp.GetColorRamp ("erdc_cyan2orange");
+		}
 		Color[] colors = new Color[colorRampWidth * colorRampHeight];
 		for (int y=0; y<colorRampHeight; y++) {
 			float yVal = y * 1.0f / colorRampHeight;
@@ -350,7 +377,12 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 			if (yVal > 1) yVal = 1;
 			
 			Color col = ramp.Value (yVal);
-			col.a = Mathf.Pow (yVal, 3);
+			if (showDifference) {
+				col.a = Mathf.Pow (Mathf.Abs (yVal * 2 - 1), 3);
+			} else {
+				col.a = Mathf.Pow (yVal, 3);
+			}
+
 			for (int x=0; x<colorRampWidth; x++) {
 				colors[y * colorRampWidth + x] = col;
 			}

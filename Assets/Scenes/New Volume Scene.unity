@@ -426,6 +426,45 @@ Transform:
   m_Children: []
   m_Father: {fileID: 392516693}
   m_RootOrder: 2
+--- !u!1 &166278584
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 166278586}
+  - 114: {fileID: 166278585}
+  m_Layer: 0
+  m_Name: FPSDisplay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &166278585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 166278584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9601cdb75110f054e9187fe4b20d8994, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &166278586
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 166278584}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.85273504, y: 1.68897223, z: 13.766571}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
 --- !u!1 &175281724
 GameObject:
   m_ObjectHideFlags: 0
@@ -1951,7 +1990,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142.780029, y: -52.5}
+  m_AnchoredPosition: {x: 142.780029, y: -39.5}
   m_SizeDelta: {x: 285.579987, y: 364}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &913859687
@@ -4070,8 +4109,10 @@ MonoBehaviour:
     type: 2}
   clipPlaneMaterial: {fileID: 2100000, guid: cce015feada4b46f5bc0fd0ca14d3907, type: 2}
   farPlaneMaterial: {fileID: 2100000, guid: 355fcbbade7e2a342a82eed09b5b0a0e, type: 2}
-  numSteps: 57
+  numSteps: 500
   volumeName: ac_temperature
+  showDifference: 1
+  differenceRange: .00999999978
   mainCamaera: {fileID: 1327279160}
 --- !u!33 &2084791894
 MeshFilter:

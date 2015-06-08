@@ -12,8 +12,15 @@ public class QESSettingsSetter : MonoBehaviour {
 	void Start () {
 		QESSettings set = new QESSettings ();
 		try {
-			//set.LoadDirectory ("/tmp/export-qes/");
-			set.LoadDirectory ("C:/scratch/tmp/coupledLSMTTM_SLC/export-qes");
+			switch (Application.platform) {
+			case RuntimePlatform.WindowsEditor:
+			case RuntimePlatform.WindowsPlayer:
+				set.LoadDirectory ("C:/scratch/export-qes");
+				break;
+			default:
+				set.LoadDirectory ("/tmp/export-qes/");
+				break;
+			}
 		} catch {
 		}
 		IQESSettingsUser[] users = GetComponentsInChildren<IQESSettingsUser> ();

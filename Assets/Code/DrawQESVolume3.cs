@@ -255,6 +255,9 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	/// </summary>
 	void CreateTexture ()
 	{
+		if (settings == null || settings.Reader == null) {
+			return;
+		}
 		float[] volData = settings.Reader.GetPatchData (volumeName, settings.CurrentTimestep);
 		if (showDifference) {
 			float[] volDiff = settings.Reader.GetPatchData (volumeName, settings.CurrentTimestep + 1);
@@ -397,6 +400,9 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	/// </summary>
 	void SetMesh ()
 	{	
+		if (settings.Reader == null) {
+			return;
+		}
 		CreateNoiseTexture ();
 		SetColorRamp();
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
@@ -506,6 +512,9 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	/// time to force the rendering of the near-plane for this specific camera.
 	/// </summary>
 	void OnRenderObject() {
+		if (settings.Reader == null) {
+			return;
+		}
 		Camera camera = Camera.current;
 		Vector3[] clipPoints = new Vector3[4];
 		Vector2[] uvList = new Vector2[4];
@@ -590,6 +599,9 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 	/// </summary>
 	void LateUpdate ()
 	{
+		if (settings.Reader == null) {
+			return;
+		}
 		SetMesh ();
 		GetComponent<MeshRenderer> ().material = volumeRenderMaterial;
 		Vector3 worldDims = settings.Reader.WorldDims;

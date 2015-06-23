@@ -66,7 +66,7 @@ public class VariableInfoController : MonoBehaviour, IQESSettingsUser {
 	/// Update the list of avaialbe variables for the type supported by the current visualization
 	/// </summary>
 	public void UpdateVariables() {
-		if (qesSettings == null) {
+		if (qesSettings == null || qesSettings.Reader == null) {
 			return;
 		}
 		IQESVisualization vis = visualizations [VisualizationCheckList.SelectedIndex];

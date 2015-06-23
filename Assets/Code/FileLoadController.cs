@@ -52,6 +52,7 @@ public class FileLoadController : MonoBehaviour, IQESSettingsUser {
 	/// </summary>
 	public void InteractiveChanged() {
 		errorText.text = "";
+
 		if (qesSettings.IsInteractive) {
 			fileLoadCanvas.enabled = false;
 		} else {

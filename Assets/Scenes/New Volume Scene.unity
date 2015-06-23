@@ -1990,7 +1990,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142.780029, y: -37}
+  m_AnchoredPosition: {x: 142.780029, y: -29.5}
   m_SizeDelta: {x: 285.579987, y: 364}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &913859687
@@ -2704,6 +2704,7 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: .0219999999
+  m_StereoMirrorMode: 0
 --- !u!4 &1327279161
 Transform:
   m_ObjectHideFlags: 0
@@ -3466,6 +3467,7 @@ MonoBehaviour:
   m_SubmitButton: Submit
   m_CancelButton: Cancel
   m_InputActionsPerSecond: 10
+  m_RepeatDelay: .5
   m_AllowActivationOnMobileDevice: 0
 --- !u!114 &1814993032
 MonoBehaviour:
@@ -4109,9 +4111,9 @@ MonoBehaviour:
     type: 2}
   clipPlaneMaterial: {fileID: 2100000, guid: cce015feada4b46f5bc0fd0ca14d3907, type: 2}
   farPlaneMaterial: {fileID: 2100000, guid: 355fcbbade7e2a342a82eed09b5b0a0e, type: 2}
-  numSteps: 500
+  numSteps: 94
   volumeName: ac_temperature
-  showDifference: 1
+  showDifference: 0
   differenceRange: .00999999978
   mainCamaera: {fileID: 1327279160}
 --- !u!33 &2084791894

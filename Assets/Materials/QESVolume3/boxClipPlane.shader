@@ -27,7 +27,6 @@ Shader "Custom/boxClipPlane" {
 		#include "UnityCG.cginc"
 		#pragma vertex vert
 		#pragma fragment frag
-		#pragma glsl
 
 		#include "VolumeRender.cginc"
     	ENDCG

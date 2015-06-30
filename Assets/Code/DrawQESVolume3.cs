@@ -325,6 +325,11 @@ public class DrawQESVolume3 : MonoBehaviour, IQESSettingsUser, IQESVisualization
 		} else {
 			relativeSize = new Vector4(width * 1.0f / depth, height * 1.0f / depth, 1, 0);
 		}
+
+		//TODO: Replace this with a better way to set all IVolumeTextureUsers
+		foreach (IVolumeTextureUser texu in GetComponentsInChildren<IVolumeTextureUser>()) {
+			texu.UpdateTexture(cubeTex, relativeAmounts);
+		}
 	}
 
 	/// <summary>

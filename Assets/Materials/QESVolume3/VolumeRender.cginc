@@ -113,8 +113,9 @@ half4 frag (v2f i) : COLOR
 		float val = tex3D(_MainTex, pos * _RelativeBounds.xyz);
 		//float val = (pos.x + pos.y + pos.z)/3.0;
 		float4 col = tex2D(_RampTex, half2( val, val));
-		col.a *= weight;
-		col.a = clamp(weight, 0.0, 1.0);
+		col.a *= weight * 1.0;
+		//col.a = col.a * 3.0 - 1.0;
+		col.a = clamp(col.a, 0.0, 1.0);
 		col.rgb *= col.a;
 		ans = ans * (1.0 - col.a) + col;
 	}

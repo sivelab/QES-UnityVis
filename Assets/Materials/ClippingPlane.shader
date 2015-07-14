@@ -52,6 +52,7 @@ half4 frag (v2f i) : COLOR
 	if ( clmp.x != i.uvw.x || clmp.y != i.uvw.y || clmp.z != i.uvw.z) {
 		discard;
 	}
+	float numIso = 10.0;
 	half3 tx = i.uvw * _RelativeBounds.xyz;
 	tx = clamp(tx, 0.0, 1.0);
 	half3 dtxdx = ddx(tx);
@@ -60,7 +61,7 @@ half4 frag (v2f i) : COLOR
 	float valx = tex3D(_MainTex, clamp(tx + dtxdx, 0.0, 1.0)).x;
 	float valy = tex3D(_MainTex, clamp(tx + dtxdy, 0.0, 1.0)).x;
 	half4 ans = half4(val, val*2.0, val*4.0, 1.0);
-	if (floor(val * 5.0) != floor(valx * 5.0) || floor(val * 5.0) != floor(valy * 5.0)) {
+	if (floor(val * numIso) != floor(valx * numIso) || floor(val * numIso) != floor(valy * numIso)) {
 		ans = half4(0.0, 0.0, 0.0, 1.0);
 	}
 	return ans;
